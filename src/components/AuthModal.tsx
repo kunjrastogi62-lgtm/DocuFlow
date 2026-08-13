@@ -10,10 +10,10 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('kunjrastogi62@gmail.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('Kunj Rastogi');
-  const [username, setUsername] = useState('kunjrastogi');
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
@@ -65,10 +65,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setLoading(true);
     setErrorMsg(null);
     try {
+      const fallbackEmail = email || 'user@gmail.com';
+      const fallbackName = fullName || (email ? email.split('@')[0] : 'User');
+      const fallbackUsername = username || (email ? email.split('@')[0] : 'user');
       const user = await signInWithGoogle(
-        email || 'kunjrastogi62@gmail.com',
-        fullName || 'Kunj Rastogi',
-        username || 'kunjrastogi'
+        fallbackEmail,
+        fallbackName,
+        fallbackUsername
       );
       if (user) {
         onSuccess();
@@ -172,7 +175,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter your username (e.g. kunjrastogi)"
+                      placeholder="Enter your username"
                       className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
                     />
                   </div>
@@ -196,7 +199,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address / Gmail</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Enter Your Gmail</label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -204,7 +207,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
+                  placeholder="Enter Your Gmail"
                   className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
                 />
               </div>

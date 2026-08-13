@@ -59,9 +59,9 @@ export async function getCurrentUser() {
 }
 
 export async function signInWithDemoGoogleUser(
-  email = 'kunjrastogi62@gmail.com',
-  name = 'Kunj Rastogi',
-  username = 'kunjrastogi'
+  email = 'user@gmail.com',
+  name = 'User',
+  username = 'user'
 ) {
   const cleanUsername = username || email.split('@')[0] || 'user';
   const googleUser = {
@@ -135,11 +135,11 @@ export async function signOutUser() {
 
 // User profile sync
 export async function syncUserProfile(user: any): Promise<UserProfile> {
-  const username = user.user_metadata?.username || user.user_metadata?.full_name?.toLowerCase().replace(/\s+/g, '_') || user.email?.split('@')[0] || 'kunjrastogi';
+  const username = user.user_metadata?.username || user.user_metadata?.full_name?.toLowerCase().replace(/\s+/g, '_') || user.email?.split('@')[0] || 'user';
   const profile: UserProfile = {
     id: user.id,
-    email: user.email || 'kunjrastogi62@gmail.com',
-    full_name: user.user_metadata?.full_name || username || 'Kunj Rastogi',
+    email: user.email || '',
+    full_name: user.user_metadata?.full_name || username || 'User',
     username: username,
     avatar_url: user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username || user.email}`,
     updated_at: new Date().toISOString(),
