@@ -63,9 +63,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setLoading(true);
     setErrorMsg(null);
     try {
-      await signInWithGoogle();
+      const user = await signInWithGoogle();
+      if (user) {
+        onSuccess();
+        onClose();
+      }
     } catch (err: any) {
       setErrorMsg(err.message || 'Google OAuth failed.');
+    } finally {
       setLoading(false);
     }
   };

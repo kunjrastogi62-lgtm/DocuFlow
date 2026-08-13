@@ -154,6 +154,20 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
 
         {/* View Mode & Sorting */}
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          {activeTab === 'trash' && sortedDocs.length > 0 && (
+            <button
+              onClick={() => {
+                if (confirm('Permanently delete ALL items in trash? This cannot be undone.')) {
+                  sortedDocs.forEach(doc => onDeleteDoc(doc.id, true));
+                }
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold rounded-lg border border-red-200 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-red-600" />
+              Empty Trash
+            </button>
+          )}
+
           {/* Sort Selector */}
           <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-700 shadow-xs">
             <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
@@ -333,7 +347,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                             <Copy className="w-3.5 h-3.5 text-slate-400" />
                             Duplicate Copy
                           </button>
-                          {doc.is_archived && (
+                          {doc.is_archived ? (
                             <>
                               <div className="border-t border-slate-100 my-1" />
                               <button
@@ -344,6 +358,32 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                                 className="w-full text-left px-3 py-2 text-xs text-emerald-600 hover:bg-emerald-50 flex items-center gap-2 font-medium"
                               >
                                 Restore Document
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setMenuOpenDocId(null);
+                                  if (confirm('Permanently delete this document? This cannot be undone.')) {
+                                    onDeleteDoc(doc.id, true);
+                                  }
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 font-medium"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                Delete Permanently
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <div className="border-t border-slate-100 my-1" />
+                              <button
+                                onClick={() => {
+                                  setMenuOpenDocId(null);
+                                  onDeleteDoc(doc.id, false);
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 font-medium"
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                Move to Trash
                               </button>
                             </>
                           )}
@@ -440,21 +480,43 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                   <td className="py-3.5 px-5 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-1">
                       {doc.is_archived ? (
-                        <button
-                          onClick={() => onRestoreDoc(doc.id)}
-                          className="px-2.5 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 border border-emerald-200 rounded transition-colors"
-                          title="Restore Document"
-                        >
-                          Restore
-                        </button>
+                        <>
+                          <button
+                            onClick={() => onRestoreDoc(doc.id)}
+                            className="px-2.5 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-50 border border-emerald-200 rounded transition-colors"
+                            title="Restore Document"
+                          >
+                            Restore
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Permanently delete this document? This cannot be undone.')) {
+                                onDeleteDoc(doc.id, true);
+                              }
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            title="Delete Permanently"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </button>
+                        </>
                       ) : (
-                        <button
-                          onClick={() => onShareDoc(doc)}
-                          className="p-1.5 text-slate-400 hover:text-blue-600 rounded hover:bg-slate-100"
-                          title="Share"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </button>
+                        <>
+                          <button
+                            onClick={() => onShareDoc(doc)}
+                            className="p-1.5 text-slate-400 hover:text-blue-600 rounded hover:bg-slate-100"
+                            title="Share"
+                          >
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => onDeleteDoc(doc.id, false)}
+                            className="p-1.5 text-slate-400 hover:text-red-600 rounded hover:bg-slate-100"
+                            title="Move to Trash"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>

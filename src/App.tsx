@@ -61,6 +61,22 @@ export default function App() {
 
     initAuth();
 
+    const handleCustomAuthChange = async (e: Event) => {
+      const customUser = (e as CustomEvent).detail;
+      if (customUser) {
+        setUser(customUser);
+        const p = await syncUserProfile(customUser);
+        setProfile(p);
+        loadDocs(customUser.id);
+      } else {
+        setUser(null);
+        setProfile(null);
+        loadDocs(undefined);
+      }
+    };
+
+    window.addEventListener('docuflow_auth_change', handleCustomAuthChange);
+
     // Supabase auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
@@ -68,14 +84,11 @@ export default function App() {
         const p = await syncUserProfile(session.user);
         setProfile(p);
         loadDocs(session.user.id);
-      } else {
-        setUser(null);
-        setProfile(null);
-        loadDocs(undefined);
       }
     });
 
     return () => {
+      window.removeEventListener('docuflow_auth_change', handleCustomAuthChange);
       subscription.unsubscribe();
     };
   }, []);
