@@ -152,7 +152,7 @@ export async function syncUserProfile(user: any): Promise<UserProfile> {
 // Fetch documents from Supabase with fallback
 export async function fetchDocuments(userId?: string): Promise<{ docs: DocuFlowDocument[]; isLocal: boolean }> {
   if (!userId) {
-    const local = getLocalDocuments();
+    const local = getLocalDocuments().filter(d => d.owner_id === 'guest');
     return { docs: local, isLocal: true };
   }
 

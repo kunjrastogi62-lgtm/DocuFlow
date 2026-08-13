@@ -71,7 +71,8 @@ export default function App() {
       } else {
         setUser(null);
         setProfile(null);
-        loadDocs(undefined);
+        setActiveDocId(null);
+        loadDocs(null);
       }
     };
 
@@ -84,6 +85,11 @@ export default function App() {
         const p = await syncUserProfile(session.user);
         setProfile(p);
         loadDocs(session.user.id);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setProfile(null);
+        setActiveDocId(null);
+        loadDocs(null);
       }
     });
 
@@ -94,8 +100,9 @@ export default function App() {
   }, []);
 
   // Fetch documents from Supabase with fallback
-  const loadDocs = async (userId?: string) => {
-    const { docs } = await fetchDocuments(userId || user?.id);
+  const loadDocs = async (overrideUserId?: string | null) => {
+    const targetUserId = overrideUserId !== undefined ? overrideUserId : user?.id;
+    const { docs } = await fetchDocuments(targetUserId || undefined);
     setDocuments(docs);
   };
 
@@ -242,7 +249,8 @@ export default function App() {
     await signOutUser();
     setUser(null);
     setProfile(null);
-    loadDocs(undefined);
+    setActiveDocId(null);
+    loadDocs(null);
   };
 
   // Calculate counts for sidebar badge
@@ -256,10 +264,17 @@ export default function App() {
   const activeDoc = documents.find((d) => d.id === activeDocId);
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] text-slate-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/30 via-slate-50 to-slate-100 text-slate-900 flex flex-col font-sans relative">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-200/20 blur-[100px]" />
+        <div className="absolute top-[60%] -left-[10%] w-[30%] h-[30%] rounded-full bg-indigo-200/20 blur-[100px]" />
+      </div>
+      
       {/* If in Editor mode, display full editor */}
       {activeDocId && activeDoc ? (
-        <DocumentEditor
+        <div className="z-10 flex-1 flex flex-col overflow-hidden">
+          <DocumentEditor
           doc={activeDoc}
           onGoBack={() => {
             setActiveDocId(null);
@@ -277,9 +292,10 @@ export default function App() {
           onRestoreVersion={handleRestoreVersion}
           isSaving={isSaving}
         />
+        </div>
       ) : (
         /* Dashboard Mode */
-        <>
+        <div className="z-10 flex-1 flex flex-col overflow-hidden">
           <Navbar
             user={user}
             profile={profile}
@@ -326,7 +342,7 @@ export default function App() {
             <span>© 2026 DocuFlow • Professional Cloud Document Editor</span>
             <span className="font-mono">v2.4.1-stable</span>
           </footer>
-        </>
+        </div>
       )}
 
       {/* Auth Modal */}
