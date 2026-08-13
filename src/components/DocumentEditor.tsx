@@ -1,0 +1,682 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  ArrowLeft, 
+  Star, 
+  Share2, 
+  History, 
+  MessageSquare, 
+  CheckCircle2, 
+  Download, 
+  Printer, 
+  Bold, 
+  Italic, 
+  Underline, 
+  Strikethrough, 
+  Code, 
+  FileCode,
+  AlignLeft, 
+  AlignCenter, 
+  AlignRight, 
+  AlignJustify, 
+  List, 
+  ListOrdered, 
+  CheckSquare, 
+  Table, 
+  Image as ImageIcon, 
+  Highlighter, 
+  Type, 
+  ChevronDown, 
+  Plus, 
+  FileText, 
+  BookOpen, 
+  Sparkles, 
+  Lock, 
+  Globe, 
+  Users, 
+  Quote, 
+  Minus, 
+  Info,
+  Undo,
+  Redo,
+  CloudCheck,
+  Save
+} from 'lucide-react';
+import { DocuFlowDocument, DocumentComment, DocumentVersion } from '../types';
+import { CommentsPanel } from './CommentsPanel';
+import { VersionHistoryPanel } from './VersionHistoryPanel';
+import { ShareModal } from './ShareModal';
+
+interface DocumentEditorProps {
+  doc: DocuFlowDocument;
+  onGoBack: () => void;
+  onUpdateDocument: (docId: string, updates: Partial<DocuFlowDocument>) => void;
+  comments: DocumentComment[];
+  onAddComment: (text: string, highlightedText?: string) => void;
+  onResolveComment: (commentId: string, resolved: boolean) => void;
+  versions: DocumentVersion[];
+  onCreateVersion: (name: string) => void;
+  onRestoreVersion: (version: DocumentVersion) => void;
+  isSaving?: boolean;
+}
+
+export const DocumentEditor: React.FC<DocumentEditorProps> = ({
+  doc,
+  onGoBack,
+  onUpdateDocument,
+  comments,
+  onAddComment,
+  onResolveComment,
+  versions,
+  onCreateVersion,
+  onRestoreVersion,
+  isSaving = false,
+}) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const [title, setTitle] = useState(doc.title);
+  const [activeTab, setActiveTab] = useState<'editor' | 'comments' | 'versions'>('editor');
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [selectedText, setSelectedText] = useState<string>('');
+  const [fontFamily, setFontFamily] = useState('Inter, sans-serif');
+  const [fontSize, setFontSize] = useState('16px');
+  const [activeHeading, setActiveHeading] = useState('p');
+  const [textColor, setTextColor] = useState('#0f172a');
+  const [highlightColor, setHighlightColor] = useState('transparent');
+  const [showOutline, setShowOutline] = useState(true);
+  const [headings, setHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
+
+  const [showSourceCode, setShowSourceCode] = useState(false);
+  const [sourceHtml, setSourceHtml] = useState('');
+  const [justSaved, setJustSaved] = useState(false);
+
+  const handleManualSave = () => {
+    const currentContent = showSourceCode ? sourceHtml : (editorRef.current?.innerHTML || doc.content);
+    onUpdateDocument(doc.id, { content: currentContent, title });
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 2000);
+  };
+
+  // Update editor innerHTML when doc changes
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== doc.content) {
+      editorRef.current.innerHTML = doc.content || '<p>Start typing here...</p>';
+      updateHeadingsOutline();
+    }
+    setTitle(doc.title);
+  }, [doc.id]);
+
+  // Handle title auto-save
+  const handleTitleChange = (newTitle: string) => {
+    setTitle(newTitle);
+    onUpdateDocument(doc.id, { title: newTitle });
+  };
+
+  // Content input handler with debounce
+  const handleEditorInput = () => {
+    if (editorRef.current) {
+      const html = editorRef.current.innerHTML;
+      onUpdateDocument(doc.id, { content: html });
+      updateHeadingsOutline();
+    }
+  };
+
+  const toggleSourceMode = () => {
+    if (!showSourceCode) {
+      // Entering Source Mode: store current innerHTML
+      const currentHtml = editorRef.current?.innerHTML || doc.content || '';
+      setSourceHtml(currentHtml);
+      setShowSourceCode(true);
+    } else {
+      // Exiting Source Mode: apply sourceHtml to document
+      setShowSourceCode(false);
+      onUpdateDocument(doc.id, { content: sourceHtml });
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.innerHTML = sourceHtml;
+          updateHeadingsOutline();
+        }
+      }, 50);
+    }
+  };
+
+  // Track selection for inline commenting
+  const handleSelectionChange = () => {
+    const sel = window.getSelection();
+    if (sel && sel.toString().trim().length > 0) {
+      setSelectedText(sel.toString().trim());
+    }
+  };
+
+  // Extract headings for outline sidebar
+  const updateHeadingsOutline = () => {
+    if (!editorRef.current) return;
+    const elements = editorRef.current.querySelectorAll('h1, h2, h3');
+    const list: { id: string; text: string; level: number }[] = [];
+    elements.forEach((el, index) => {
+      const id = el.id || `heading-${index}`;
+      el.id = id;
+      list.push({
+        id,
+        text: el.textContent || `Heading ${index + 1}`,
+        level: el.tagName === 'H1' ? 1 : el.tagName === 'H2' ? 2 : 3,
+      });
+    });
+    setHeadings(list);
+  };
+
+  // Formatting commands
+  const execCmd = (command: string, value: string = '') => {
+    document.execCommand(command, false, value);
+    if (editorRef.current) editorRef.current.focus();
+    handleEditorInput();
+  };
+
+  const applyFormatBlock = (tag: string) => {
+    setActiveHeading(tag);
+    execCmd('formatBlock', tag);
+  };
+
+  const insertBlockHTML = (html: string) => {
+    if (!editorRef.current) return;
+    editorRef.current.focus();
+
+    const selection = window.getSelection();
+    let currentBlock: HTMLElement | null = null;
+
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      let node: Node | null = range.commonAncestorContainer;
+      if (node && node.nodeType === Node.TEXT_NODE) {
+        node = node.parentElement;
+      }
+      if (node && node instanceof HTMLElement) {
+        currentBlock = node.closest('h1, h2, h3, h4, h5, h6, p, li, pre, .callout-box, table, blockquote, div');
+      }
+    }
+
+    // Create wrapper element from HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html.trim();
+    const newNodes = Array.from(tempDiv.childNodes);
+
+    if (currentBlock && editorRef.current.contains(currentBlock) && currentBlock !== editorRef.current) {
+      const parent = currentBlock.parentNode;
+      if (parent) {
+        let referenceNode = currentBlock.nextSibling;
+        newNodes.forEach((node) => {
+          parent.insertBefore(node, referenceNode);
+        });
+        handleEditorInput();
+        return;
+      }
+    }
+
+    // Fallback: Append to end of editor canvas
+    newNodes.forEach((node) => {
+      editorRef.current?.appendChild(node);
+    });
+    handleEditorInput();
+  };
+
+  const insertTable = () => {
+    const tableHtml = `
+      <table style="width:100%; border-collapse:collapse; margin:16px 0; border:1px solid #cbd5e1;">
+        <thead>
+          <tr style="background:#f8fafc;">
+            <th style="border:1px solid #cbd5e1; padding:8px;">Header 1</th>
+            <th style="border:1px solid #cbd5e1; padding:8px;">Header 2</th>
+            <th style="border:1px solid #cbd5e1; padding:8px;">Header 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="border:1px solid #cbd5e1; padding:8px;">Cell 1</td>
+            <td style="border:1px solid #cbd5e1; padding:8px;">Cell 2</td>
+            <td style="border:1px solid #cbd5e1; padding:8px;">Cell 3</td>
+          </tr>
+        </tbody>
+      </table>
+      <p><br></p>
+    `;
+    insertBlockHTML(tableHtml);
+  };
+
+  const insertImage = () => {
+    const url = prompt('Enter Image URL:', 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop');
+    if (url) {
+      const imgHtml = `<p><img src="${url}" alt="Document Image" style="max-width:100%; height:auto; border-radius:12px; margin:16px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" /></p>`;
+      insertBlockHTML(imgHtml);
+    }
+  };
+
+  const insertCallout = () => {
+    const calloutHtml = `
+      <div class="callout-box">
+        <strong>💡 Note:</strong> Enter callout message here...
+      </div>
+      <p><br></p>
+    `;
+    insertBlockHTML(calloutHtml);
+  };
+
+  const insertCodeBlock = () => {
+    const codeHtml = `
+      <pre><code>// Write code snippet here
+function helloDocuFlow() {
+  console.log("Connected to Supabase!");
+}</code></pre>
+      <p><br></p>
+    `;
+    insertBlockHTML(codeHtml);
+  };
+
+  // Export functions
+  const downloadFile = (filename: string, content: string, type: string) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportAsMarkdown = () => {
+    const text = doc.content
+      .replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
+      .replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
+      .replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
+      .replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
+      .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+      .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+      .replace(/<[^>]*>/g, '');
+    downloadFile(`${doc.title || 'document'}.md`, text, 'text/markdown');
+  };
+
+  const exportAsHTML = () => {
+    const fullHtml = `<!DOCTYPE html><html><head><title>${doc.title}</title><style>body{font-family:sans-serif; max-width:800px; margin:40px auto; padding:20px; line-height:1.6;}</style></head><body>${doc.content}</body></html>`;
+    downloadFile(`${doc.title || 'document'}.html`, fullHtml, 'text/html');
+  };
+
+  return (
+    <div className="flex flex-col h-screen bg-slate-100 overflow-hidden">
+      {/* Top Navigation & Menu Bar */}
+      <header className="bg-white border-b border-slate-200/90 px-4 py-2 flex items-center justify-between gap-3 shrink-0 z-20 shadow-xs">
+        {/* Left Back & Title */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onGoBack}
+            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+            title="Back to Dashboard"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{doc.icon || '📄'}</span>
+            <div>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="Untitled Document"
+                className="text-base font-bold text-slate-900 bg-transparent hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-200 rounded-lg px-2 py-0.5 outline-hidden transition-all max-w-xs sm:max-w-md"
+              />
+              
+              {/* File Menu Options */}
+              <div className="flex items-center gap-3 text-xs text-slate-500 px-2 mt-0.5">
+                <button
+                  onClick={handleManualSave}
+                  className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+                >
+                  Save Now
+                </button>
+                <span>•</span>
+                <button
+                  onClick={() => onCreateVersion(`Snapshot - ${new Date().toLocaleTimeString()}`)}
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  Save Snapshot
+                </button>
+                <span>•</span>
+                <button onClick={exportAsMarkdown} className="hover:text-blue-600 transition-colors">
+                  Export MD
+                </button>
+                <span>•</span>
+                <button onClick={exportAsHTML} className="hover:text-blue-600 transition-colors">
+                  Export HTML
+                </button>
+                <span>•</span>
+                <button onClick={() => window.print()} className="hover:text-blue-600 transition-colors">
+                  Print PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Status & Collaboration Actions */}
+        <div className="flex items-center gap-2">
+          {/* Manual Save Button */}
+          <button
+            onClick={handleManualSave}
+            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+              justSaved 
+                ? 'bg-emerald-700 text-white' 
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+            }`}
+            title="Save Changes"
+          >
+            <Save className="w-4 h-4" />
+            <span>{justSaved ? 'Saved!' : 'Save'}</span>
+          </button>
+
+          {/* Auto-save Status */}
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-slate-50 rounded-xl text-xs font-medium border border-slate-200 text-slate-600">
+            {isSaving ? (
+              <span className="flex items-center gap-1.5 text-amber-600">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span>Saving...</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-emerald-700 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Saved</span>
+              </span>
+            )}
+          </div>
+
+          {/* Active Collaborators */}
+          <div className="hidden md:flex items-center -space-x-1.5 pr-2">
+            <img
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${doc.owner_email || 'owner'}`}
+              alt="Owner"
+              className="w-7 h-7 rounded-full border-2 border-white bg-blue-100 object-cover"
+              title={`Owner: ${doc.owner_email || 'You'}`}
+            />
+          </div>
+
+          {/* Version History Toggle */}
+          <button
+            onClick={() => setActiveTab(activeTab === 'versions' ? 'editor' : 'versions')}
+            className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+              activeTab === 'versions'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
+            }`}
+            title="Version History"
+          >
+            <History className="w-4 h-4" />
+            <span className="hidden sm:inline">Versions</span>
+          </button>
+
+          {/* Comments Panel Toggle */}
+          <button
+            onClick={() => setActiveTab(activeTab === 'comments' ? 'editor' : 'comments')}
+            className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all relative ${
+              activeTab === 'comments'
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
+            }`}
+            title="Comments Thread"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span className="hidden sm:inline">Comments</span>
+            {comments.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center border border-white">
+                {comments.length}
+              </span>
+            )}
+          </button>
+
+          {/* Share Modal Trigger */}
+          <button
+            onClick={() => setIsShareModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-all"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Share</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Formatting Toolbar */}
+      <div className="bg-white border-b border-slate-200/80 px-4 py-1.5 flex items-center gap-1 overflow-x-auto shrink-0 scrollbar-none z-10 text-slate-700">
+        {/* Undo / Redo */}
+        <button onClick={() => execCmd('undo')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Undo">
+          <Undo className="w-4 h-4" />
+        </button>
+        <button onClick={() => execCmd('redo')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Redo">
+          <Redo className="w-4 h-4" />
+        </button>
+        <div className="w-px h-5 bg-slate-200 mx-1" />
+
+        {/* Heading / Style Selector */}
+        <select
+          value={activeHeading}
+          onChange={(e) => applyFormatBlock(e.target.value)}
+          className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium text-slate-800 outline-hidden cursor-pointer"
+        >
+          <option value="p">Normal Text</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
+        </select>
+
+        {/* Font Family */}
+        <select
+          value={fontFamily}
+          onChange={(e) => {
+            setFontFamily(e.target.value);
+            execCmd('fontName', e.target.value);
+          }}
+          className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium text-slate-800 outline-hidden cursor-pointer hidden md:block"
+        >
+          <option value="Inter, sans-serif">Inter</option>
+          <option value="'Playfair Display', serif">Playfair Serif</option>
+          <option value="'JetBrains Mono', monospace">Monospace</option>
+          <option value="Arial, sans-serif">Arial</option>
+        </select>
+
+        <div className="w-px h-5 bg-slate-200 mx-1" />
+
+        {/* Text Style toggles */}
+        <button onClick={() => execCmd('bold')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold" title="Bold">
+          <Bold className="w-4 h-4" />
+        </button>
+        <button onClick={() => execCmd('italic')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 italic" title="Italic">
+          <Italic className="w-4 h-4" />
+        </button>
+        <button onClick={() => execCmd('underline')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 underline" title="Underline">
+          <Underline className="w-4 h-4" />
+        </button>
+        <button onClick={() => execCmd('strikeThrough')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 line-through" title="Strikethrough">
+          <Strikethrough className="w-4 h-4" />
+        </button>
+
+        {/* Text Color / Highlight */}
+        <div className="flex items-center gap-1 border-l border-slate-200 pl-1">
+          <input
+            type="color"
+            value={textColor}
+            onChange={(e) => {
+              setTextColor(e.target.value);
+              execCmd('foreColor', e.target.value);
+            }}
+            className="w-6 h-6 rounded-md cursor-pointer border border-slate-300 p-0"
+            title="Text Color"
+          />
+          <input
+            type="color"
+            value={highlightColor}
+            onChange={(e) => {
+              setHighlightColor(e.target.value);
+              execCmd('hiliteColor', e.target.value);
+            }}
+            className="w-6 h-6 rounded-md cursor-pointer border border-slate-300 p-0"
+            title="Highlight Color"
+          />
+        </div>
+
+        <div className="w-px h-5 bg-slate-200 mx-1" />
+
+        {/* Alignment */}
+        <button onClick={() => execCmd('justifyLeft')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Align Left">
+          <AlignLeft className="w-4 h-4" />
+        </button>
+        <button onClick={() => execCmd('justifyCenter')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Align Center">
+          <AlignCenter className="w-4 h-4" />
+        </button>
+        <button onClick={() => execCmd('justifyRight')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Align Right">
+          <AlignRight className="w-4 h-4" />
+        </button>
+
+        <div className="w-px h-5 bg-slate-200 mx-1" />
+
+        {/* Lists */}
+        <button onClick={() => execCmd('insertUnorderedList')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Bullet List">
+          <List className="w-4 h-4" />
+        </button>
+        <button onClick={() => execCmd('insertOrderedList')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Numbered List">
+          <ListOrdered className="w-4 h-4" />
+        </button>
+
+        <div className="w-px h-5 bg-slate-200 mx-1" />
+
+        {/* Insert Elements */}
+        <button onClick={insertTable} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Insert Table">
+          <Table className="w-4 h-4" />
+        </button>
+        <button onClick={insertImage} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Insert Image">
+          <ImageIcon className="w-4 h-4" />
+        </button>
+        <button onClick={insertCallout} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Insert Callout Note">
+          <Info className="w-4 h-4 text-blue-600" />
+        </button>
+
+        <div className="w-px h-5 bg-slate-200 mx-1" />
+
+        {/* Toggle HTML Source Code Mode */}
+        <button
+          onClick={toggleSourceMode}
+          className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold ${
+            showSourceCode ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+          title="Toggle Raw HTML Source View"
+        >
+          <FileCode className="w-4 h-4" />
+          <span className="hidden sm:inline">{showSourceCode ? 'Visual' : 'HTML'}</span>
+        </button>
+
+        {/* Add Comment on Selection */}
+        {selectedText && (
+          <button
+            onClick={() => {
+              setActiveTab('comments');
+              onAddComment('Needs review or discussion.', selectedText);
+            }}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg shadow-xs animate-bounce"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Comment on "{selectedText.slice(0, 12)}..."</span>
+          </button>
+        )}
+      </div>
+
+      {/* Main Document Body */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Outline Table of Contents Sidebar */}
+        {showOutline && headings.length > 0 && (
+          <aside className="w-56 shrink-0 bg-white border-r border-slate-200/80 p-4 hidden xl:block overflow-y-auto">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+              Document Outline
+            </h4>
+            <div className="space-y-1.5 text-xs">
+              {headings.map((h) => (
+                <a
+                  key={h.id}
+                  href={`#${h.id}`}
+                  className={`block truncate text-slate-600 hover:text-blue-600 transition-colors ${
+                    h.level === 1 ? 'font-bold' : h.level === 2 ? 'pl-2 font-medium' : 'pl-4 text-slate-400'
+                  }`}
+                >
+                  {h.text}
+                </a>
+              ))}
+            </div>
+          </aside>
+        )}
+
+        {/* Editor Page Canvas Area */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center bg-slate-100/90">
+          <div className="w-full max-w-[850px] bg-white min-h-[1050px] p-8 sm:p-14 rounded-xl shadow-xl border border-slate-200/90 relative mb-12 my-2">
+            {/* Page Header subtle marker */}
+            <div className="text-[10px] text-slate-400 font-mono tracking-wider uppercase mb-6 pb-2 border-b border-slate-100 flex justify-between">
+              <span>DocuFlow Editor • {doc.category?.toUpperCase()}</span>
+              <div className="flex items-center gap-2">
+                {showSourceCode && (
+                  <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">HTML Source Mode</span>
+                )}
+                <span>{doc.word_count || 0} Words</span>
+              </div>
+            </div>
+
+            {/* Editable Content Region or Source Mode */}
+            {showSourceCode ? (
+              <textarea
+                value={sourceHtml}
+                onChange={(e) => {
+                  setSourceHtml(e.target.value);
+                  onUpdateDocument(doc.id, { content: e.target.value });
+                }}
+                className="w-full min-h-[850px] font-mono text-xs p-4 bg-[#0F172A] text-slate-200 rounded-lg border border-slate-800 focus:outline-none leading-relaxed font-normal"
+                placeholder="<h1>Type HTML source here...</h1>"
+              />
+            ) : (
+              <div
+                ref={editorRef}
+                contentEditable
+                onInput={handleEditorInput}
+                onMouseUp={handleSelectionChange}
+                onKeyUp={handleSelectionChange}
+                className="prose prose-slate max-w-none focus:outline-hidden min-h-[850px] leading-relaxed text-slate-800"
+                style={{
+                  fontFamily: fontFamily,
+                  fontSize: fontSize,
+                }}
+              />
+            )}
+          </div>
+        </main>
+
+        {/* Side Panels */}
+        {activeTab === 'comments' && (
+          <CommentsPanel
+            comments={comments}
+            selectedText={selectedText}
+            onAddComment={(txt, sel) => onAddComment(txt, sel)}
+            onResolveComment={onResolveComment}
+            onClose={() => setActiveTab('editor')}
+          />
+        )}
+
+        {activeTab === 'versions' && (
+          <VersionHistoryPanel
+            versions={versions}
+            onCreateVersion={onCreateVersion}
+            onRestoreVersion={onRestoreVersion}
+            onClose={() => setActiveTab('editor')}
+          />
+        )}
+      </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        doc={doc}
+        onClose={() => setIsShareModalOpen(false)}
+        onUpdateAccess={(acc) => onUpdateDocument(doc.id, { access_level: acc })}
+      />
+    </div>
+  );
+};

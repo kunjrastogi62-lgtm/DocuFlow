@@ -1,0 +1,6 @@
+{
+  "name": "DocuFlow",
+  "description": "Professional cloud document editor with real-time collaboration, document versions, and Supabase integration.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
