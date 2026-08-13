@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Mail, Lock, User, ArrowRight, X, AlertCircle } from 'lucide-react';
+import { FileText, Mail, Lock, User, AtSign, ArrowRight, X, AlertCircle } from 'lucide-react';
 import { supabase, signInWithGoogle } from '../lib/supabase';
 
 interface AuthModalProps {
@@ -10,9 +10,10 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('kunjrastogi62@gmail.com');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [fullName, setFullName] = useState('Kunj Rastogi');
+  const [username, setUsername] = useState('kunjrastogi');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
@@ -33,6 +34,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           options: {
             data: {
               full_name: fullName,
+              username: username,
             },
           },
         });
@@ -63,7 +65,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     setLoading(true);
     setErrorMsg(null);
     try {
-      const user = await signInWithGoogle();
+      const user = await signInWithGoogle(
+        email || 'kunjrastogi62@gmail.com',
+        fullName || 'Kunj Rastogi',
+        username || 'kunjrastogi'
+      );
       if (user) {
         onSuccess();
         onClose();
@@ -81,13 +87,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in-95 duration-150 cursor-default"
+        className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in-95 duration-150 cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1 rounded hover:bg-slate-100 transition-colors"
+          className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -95,14 +101,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         <div className="p-6 sm:p-8">
           {/* Header */}
           <div className="flex flex-col items-center text-center mb-6">
-            <div className="w-10 h-10 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xl shadow-sm mb-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md mb-3">
               D
             </div>
             <h2 className="text-xl font-bold text-slate-900">
               {isSignUp ? 'Create DocuFlow Account' : 'Welcome to DocuFlow'}
             </h2>
             <p className="text-xs text-slate-500 mt-1">
-              Sign in to sync your cloud documents with Supabase
+              Sign in to sync your cloud documents seamlessly
             </p>
           </div>
 
@@ -125,7 +131,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-xl border border-slate-200 shadow-xs transition-colors mb-4 focus:ring-2 focus:ring-blue-500/20"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm rounded-xl border border-slate-200 shadow-xs transition-colors mb-4 focus:ring-2 focus:ring-blue-500/20"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path
@@ -150,30 +156,47 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
           <div className="relative flex items-center justify-center mb-4">
             <div className="border-t border-slate-200 w-full" />
-            <span className="bg-white px-3 text-xs text-slate-400 font-medium">OR EMAIL</span>
+            <span className="bg-white px-3 text-xs text-slate-400 font-semibold uppercase tracking-wider">OR EMAIL</span>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-3.5">
             {isSignUp && (
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Jane Doe"
-                    className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
-                  />
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Enter your username</label>
+                  <div className="relative">
+                    <AtSign className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      required
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Enter your username (e.g. kunjrastogi)"
+                      className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Jane Doe"
+                      className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
+                    />
+                  </div>
+                </div>
+              </>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address / Gmail</label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input

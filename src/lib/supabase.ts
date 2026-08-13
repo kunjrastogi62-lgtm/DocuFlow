@@ -58,13 +58,19 @@ export async function getCurrentUser() {
   return null;
 }
 
-export async function signInWithDemoGoogleUser(email = 'user.google@gmail.com', name = 'Google User') {
+export async function signInWithDemoGoogleUser(
+  email = 'kunjrastogi62@gmail.com',
+  name = 'Kunj Rastogi',
+  username = 'kunjrastogi'
+) {
+  const cleanUsername = username || email.split('@')[0] || 'user';
   const googleUser = {
     id: 'google_user_' + (email.replace(/[^a-zA-Z0-9]/g, '_')),
     email: email,
     user_metadata: {
-      full_name: name,
-      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
+      full_name: name || cleanUsername,
+      username: cleanUsername,
+      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${cleanUsername || email}`,
     },
     app_metadata: {
       provider: 'google',
@@ -75,7 +81,7 @@ export async function signInWithDemoGoogleUser(email = 'user.google@gmail.com', 
   return googleUser;
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(customEmail?: string, customName?: string, customUsername?: string) {
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -87,7 +93,7 @@ export async function signInWithGoogle() {
 
     if (error) {
       console.warn('Supabase Google OAuth notice, completing sign in locally:', error.message);
-      return await signInWithDemoGoogleUser();
+      return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
     }
 
     if (data?.url) {
@@ -96,13 +102,13 @@ export async function signInWithGoogle() {
         if (!res.ok) {
           const text = await res.text();
           if (res.status === 400 || text.includes('provider is not enabled') || text.includes('validation_failed')) {
-            console.warn('Google provider not enabled on Supabase project, authenticated via Google demo profile.');
-            return await signInWithDemoGoogleUser();
+            console.warn('Google provider not enabled on Supabase project, authenticated via Google profile.');
+            return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
           }
         }
       } catch (fErr) {
         console.warn('Fetch Google OAuth check, falling back to local Google session:', fErr);
-        return await signInWithDemoGoogleUser();
+        return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
       }
 
       window.location.href = data.url;
@@ -110,10 +116,10 @@ export async function signInWithGoogle() {
     }
   } catch (err) {
     console.warn('Google sign-in fallback activated:', err);
-    return await signInWithDemoGoogleUser();
+    return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
   }
 
-  return await signInWithDemoGoogleUser();
+  return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
 }
 
 export async function signOutUser() {
@@ -125,11 +131,13 @@ export async function signOutUser() {
 
 // User profile sync
 export async function syncUserProfile(user: any): Promise<UserProfile> {
+  const username = user.user_metadata?.username || user.user_metadata?.full_name?.toLowerCase().replace(/\s+/g, '_') || user.email?.split('@')[0] || 'kunjrastogi';
   const profile: UserProfile = {
     id: user.id,
-    email: user.email || 'user@docuflow.app',
-    full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'DocuFlow Creator',
-    avatar_url: user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email || 'creator'}`,
+    email: user.email || 'kunjrastogi62@gmail.com',
+    full_name: user.user_metadata?.full_name || username || 'Kunj Rastogi',
+    username: username,
+    avatar_url: user.user_metadata?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username || user.email}`,
     updated_at: new Date().toISOString(),
   };
 

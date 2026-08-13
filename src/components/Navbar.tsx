@@ -114,10 +114,15 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-100">
                 <div className="px-4 py-3 border-b border-slate-100">
                   <p className="text-sm font-semibold text-slate-900 truncate">
-                    {profile?.full_name || 'DocuFlow User'}
+                    {profile?.full_name || 'Kunj Rastogi'}
                   </p>
-                  <p className="text-xs text-slate-500 truncate">
-                    {user.email}
+                  {profile?.username && (
+                    <p className="text-xs font-semibold text-blue-600 truncate mt-0.5">
+                      @{profile.username}
+                    </p>
+                  )}
+                  <p className="text-xs text-slate-500 truncate mt-0.5">
+                    {user.email || profile?.email || 'kunjrastogi62@gmail.com'}
                   </p>
                 </div>
 
