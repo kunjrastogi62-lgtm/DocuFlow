@@ -50,7 +50,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          const userEmail = email.trim();
+          const userUsername = username.trim() || userEmail.split('@')[0];
+          const userFullName = fullName.trim() || userUsername;
+          await signInWithGoogle(userEmail, userFullName, userUsername);
+        }
         onSuccess();
         onClose();
       }
@@ -62,16 +67,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   };
 
   const handleGoogleSignIn = async () => {
+    if (!email.trim()) {
+      setErrorMsg('Please enter your Gmail address in "Enter Your Gmail" below before continuing with Google.');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg(null);
     try {
-      const fallbackEmail = email || 'user@gmail.com';
-      const fallbackName = fullName || (email ? email.split('@')[0] : 'User');
-      const fallbackUsername = username || (email ? email.split('@')[0] : 'user');
+      const userEmail = email.trim();
+      const userUsername = username.trim() || userEmail.split('@')[0];
+      const userFullName = fullName.trim() || userUsername;
       const user = await signInWithGoogle(
-        fallbackEmail,
-        fallbackName,
-        fallbackUsername
+        userEmail,
+        userFullName,
+        userUsername
       );
       if (user) {
         onSuccess();
@@ -164,38 +174,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-3.5">
-            {isSignUp && (
-              <>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Enter your username</label>
-                  <div className="relative">
-                    <AtSign className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      required
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter your username"
-                      className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
-                    />
-                  </div>
-                </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Enter your username</label>
+              <div className="relative">
+                <AtSign className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
+                />
+              </div>
+            </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Jane Doe"
-                      className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
-                    />
-                  </div>
+            {isSignUp && (
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                <div className="relative">
+                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Jane Doe"
+                    className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
+                  />
                 </div>
-              </>
+              </div>
             )}
 
             <div>

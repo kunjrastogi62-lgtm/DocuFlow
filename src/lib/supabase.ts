@@ -59,18 +59,19 @@ export async function getCurrentUser() {
 }
 
 export async function signInWithDemoGoogleUser(
-  email = 'user@gmail.com',
-  name = 'User',
-  username = 'user'
+  email?: string,
+  name?: string,
+  username?: string
 ) {
-  const cleanUsername = username || email.split('@')[0] || 'user';
+  const userEmail = email || 'user@example.com';
+  const cleanUsername = username || userEmail.split('@')[0] || 'user';
   const googleUser = {
-    id: 'google_user_' + (email.replace(/[^a-zA-Z0-9]/g, '_')),
-    email: email,
+    id: 'google_user_' + (userEmail.replace(/[^a-zA-Z0-9]/g, '_')),
+    email: userEmail,
     user_metadata: {
       full_name: name || cleanUsername,
       username: cleanUsername,
-      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${cleanUsername || email}`,
+      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${cleanUsername || userEmail}`,
     },
     app_metadata: {
       provider: 'google',
