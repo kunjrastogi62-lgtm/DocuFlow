@@ -15,11 +15,9 @@ import {
   Users, 
   Edit3, 
   Plus,
-  Sparkles,
-  LayoutTemplate
+  Sparkles
 } from 'lucide-react';
 import { DocuFlowDocument, ViewTab } from '../types';
-import { DOCUMENT_TEMPLATES } from '../data/templates';
 
 interface DocumentDashboardProps {
   documents: DocuFlowDocument[];
@@ -80,7 +78,6 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
     if (doc.is_archived) return false;
 
     if (activeTab === 'starred') return doc.is_starred === true;
-    if (activeTab === 'shared') return doc.access_level === 'shared' || doc.access_level === 'public_read' || doc.access_level === 'public_edit';
     if (activeTab === 'recent') {
       const diff = Date.now() - new Date(doc.updated_at).getTime();
       return diff < 7 * 24 * 60 * 60 * 1000; // last 7 days
@@ -138,9 +135,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               {activeTab === 'all' && 'Document Management'}
               {activeTab === 'recent' && 'Recent Documents'}
               {activeTab === 'starred' && 'Starred Documents'}
-              {activeTab === 'shared' && 'Shared Documents'}
               {activeTab === 'trash' && 'Trash & Archive'}
-              {activeTab === 'templates' && 'Document Templates'}
               {selectedCategory && `Category: ${selectedCategory.toUpperCase()}`}
             </span>
             <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded uppercase tracking-wider">
@@ -205,37 +200,6 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Templates Banner */}
-      {activeTab !== 'trash' && !selectedCategory && !searchQuery && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-            <div>
-              <h2 className="font-semibold text-slate-800 text-sm flex items-center gap-2">
-                <LayoutTemplate className="w-4 h-4 text-blue-600" />
-                <span>Start from a Template</span>
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">Quick start options pre-configured for team workflows</p>
-            </div>
-            <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded uppercase font-bold tracking-tight">
-              Instant Cloud
-            </span>
-          </div>
-          <div className="p-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {DOCUMENT_TEMPLATES.map((tmpl) => (
-              <button
-                key={tmpl.id}
-                onClick={() => onNewDoc(tmpl.title, tmpl.content, tmpl.category as any, tmpl.icon)}
-                className="flex flex-col text-left p-3.5 bg-slate-50/70 hover:bg-blue-50/60 border border-slate-200/80 hover:border-blue-300 rounded-lg transition-all group"
-              >
-                <div className="text-2xl mb-2 group-hover:scale-105 transition-transform">{tmpl.icon}</div>
-                <h3 className="text-xs font-bold text-slate-900 group-hover:text-blue-600 line-clamp-1">{tmpl.title}</h3>
-                <p className="text-[11px] text-slate-500 line-clamp-2 mt-1">{tmpl.description}</p>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Document Grid / List */}
       {sortedDocs.length === 0 ? (

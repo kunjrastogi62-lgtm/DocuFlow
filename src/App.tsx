@@ -257,7 +257,6 @@ export default function App() {
   const docCounts = {
     all: documents.filter((d) => !d.is_archived).length,
     starred: documents.filter((d) => d.is_starred && !d.is_archived).length,
-    shared: documents.filter((d) => (d.access_level === 'shared' || d.access_level === 'public_read' || d.access_level === 'public_edit') && !d.is_archived).length,
     trash: documents.filter((d) => d.is_archived).length,
   };
 

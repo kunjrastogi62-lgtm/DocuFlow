@@ -125,8 +125,12 @@ export async function signInWithGoogle(customEmail?: string, customName?: string
 export async function signOutUser() {
   localStorage.removeItem(LOCAL_USER_SESSION_KEY);
   window.dispatchEvent(new CustomEvent('docuflow_auth_change', { detail: null }));
-  const { error } = await supabase.auth.signOut();
-  if (error) console.error('Signout error:', error);
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error('Signout error:', error);
+  } catch (err) {
+    console.error('Signout exception:', err);
+  }
 }
 
 // User profile sync
@@ -146,6 +150,27 @@ export async function syncUserProfile(user: any): Promise<UserProfile> {
   } catch (err) {
     console.warn('Profiles table sync notice:', err);
   }
+
+  // Migrate guest documents to the newly signed-in user
+  try {
+    const localDocs = getLocalDocuments();
+    let modified = false;
+    const migratedDocs = localDocs.map(d => {
+      if (d.owner_id === 'guest') {
+        modified = true;
+        // Optionally update in supabase in background, but updating local is enough
+        // since Supabase sync would normally happen on save.
+        return { ...d, owner_id: user.id, owner_email: profile.email };
+      }
+      return d;
+    });
+    if (modified) {
+      saveLocalDocuments(migratedDocs);
+    }
+  } catch (err) {
+    console.error('Error migrating guest documents:', err);
+  }
+
   return profile;
 }
 

@@ -21,7 +21,6 @@ interface SidebarProps {
   docCounts: {
     all: number;
     starred: number;
-    shared: number;
     trash: number;
   };
 }
@@ -38,9 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'all' as ViewTab, label: 'All Documents', icon: FileText, count: docCounts.all },
     { id: 'recent' as ViewTab, label: 'Recent', icon: Clock, count: null },
     { id: 'starred' as ViewTab, label: 'Starred', icon: Star, count: docCounts.starred },
-    { id: 'shared' as ViewTab, label: 'Shared with Me', icon: Users, count: docCounts.shared },
     { id: 'trash' as ViewTab, label: 'Trash / Archive', icon: Trash2, count: docCounts.trash },
-    { id: 'templates' as ViewTab, label: 'Templates', icon: LayoutTemplate, count: null },
   ];
 
   const categories = [

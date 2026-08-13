@@ -54,7 +54,7 @@ export interface DocuFlowDocument {
   updated_at: string;
 }
 
-export type ViewTab = 'all' | 'recent' | 'starred' | 'shared' | 'trash' | 'templates';
+export type ViewTab = 'all' | 'recent' | 'starred' | 'trash';
 
 export interface ActiveUserPresence {
   user_id: string;
