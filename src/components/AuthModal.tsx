@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, AtSign, ArrowRight, X, AlertCircle, CheckCircle2, ExternalLink, RefreshCw, Sparkles } from 'lucide-react';
-import { supabase, signInWithGoogle, resendConfirmationEmail } from '../lib/supabase';
+import { supabase, resendConfirmationEmail } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -67,7 +67,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           password,
         });
         if (error) {
-          await signInWithGoogle(userEmail, userFullName, userUsername);
+          throw error;
         }
         onSuccess();
         onClose();
