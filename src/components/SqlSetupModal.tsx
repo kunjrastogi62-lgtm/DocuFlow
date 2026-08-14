@@ -31,9 +31,11 @@ export const SqlSetupModal: React.FC<SqlSetupModalProps> = ({ isOpen, onClose })
         {/* Header */}
         <div className="p-6 bg-[#0F172A] text-white flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-lg">
-              D
-            </div>
+            <img 
+              src="/logo.svg" 
+              alt="DocuFlow Logo" 
+              className="w-8 h-8 object-contain"
+            />
             <div>
               <h3 className="text-base font-bold text-white">Database Configuration</h3>
               <p className="text-xs text-slate-400">Connect your DocuFlow instance to your Supabase project</p>

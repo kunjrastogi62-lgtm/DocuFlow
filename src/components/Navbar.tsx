@@ -46,9 +46,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           className="flex items-center gap-3 text-left focus:outline-none group"
           title="DocuFlow Home"
         >
-          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-xl shadow-xs group-hover:bg-blue-700 transition-colors">
-            D
-          </div>
+          <img 
+            src="/logo.svg" 
+            alt="DocuFlow Logo" 
+            className="w-8 h-8 object-contain transition-transform group-hover:scale-105"
+          />
           <span className="text-slate-900 font-semibold text-lg tracking-tight group-hover:text-blue-600 transition-colors">
             DocuFlow
           </span>

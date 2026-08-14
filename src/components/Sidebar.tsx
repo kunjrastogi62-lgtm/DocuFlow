@@ -132,9 +132,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Footer Info */}
       <div className="p-4 border-t border-slate-800/50">
         <div className="flex items-center gap-3 p-2">
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs font-semibold text-white">
-            DF
-          </div>
+          <img 
+            src="/logo.svg" 
+            alt="DocuFlow Logo" 
+            className="w-8 h-8 object-contain"
+          />
           <div>
             <p className="text-white text-xs font-medium">DocuFlow Pro</p>
             <p className="text-[10px] text-slate-500">v2.4.1-stable</p>

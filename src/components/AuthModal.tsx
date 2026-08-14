@@ -222,9 +222,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           <div className="p-6 sm:p-8">
             {/* Header */}
             <div className="flex flex-col items-center text-center mb-6">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md mb-3">
-                D
-              </div>
+              <img 
+                src="/logo.svg" 
+                alt="DocuFlow Logo" 
+                className="w-12 h-12 object-contain mb-3"
+              />
               <h2 className="text-xl font-bold text-slate-900">
                 {isSignUp ? 'Create DocuFlow Account' : 'Welcome to DocuFlow'}
               </h2>
