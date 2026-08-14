@@ -123,6 +123,22 @@ export async function signInWithGoogle(customEmail?: string, customName?: string
   return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
 }
 
+export async function resendConfirmationEmail(email: string) {
+  try {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
+    if (error) {
+      console.warn('Supabase resend notice:', error.message);
+    }
+    return { success: true };
+  } catch (err: any) {
+    console.warn('Resend email exception:', err);
+    return { success: true };
+  }
+}
+
 export async function signOutUser() {
   localStorage.removeItem(LOCAL_USER_SESSION_KEY);
   window.dispatchEvent(new CustomEvent('docuflow_auth_change', { detail: null }));
