@@ -93,22 +93,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
     }
   };
 
-  const handleCompleteConfirmedSignIn = async () => {
-    setLoading(true);
-    try {
-      const userEmail = confirmedEmail || email.trim();
-      const userUsername = username.trim() || userEmail.split('@')[0];
-      const userFullName = fullName.trim() || userUsername;
-      await signInWithGoogle(userEmail, userFullName, userUsername);
-      onSuccess();
-      onClose();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleOpenGmail = () => {
     window.open('https://mail.google.com', '_blank');
   };
@@ -182,17 +166,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 <Mail className="w-4 h-4" />
                 <span>Open Gmail Inbox</span>
                 <ExternalLink className="w-3.5 h-3.5 ml-0.5 opacity-80" />
-              </button>
-
-              {/* Continue / I've Confirmed Button */}
-              <button
-                type="button"
-                onClick={handleCompleteConfirmedSignIn}
-                disabled={loading}
-                className="w-full mb-3 flex items-center justify-center gap-2 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm rounded-xl shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 cursor-pointer"
-              >
-                <span>{loading ? 'Entering App...' : "I've Confirmed, Open DocuFlow"}</span>
-                <ArrowRight className="w-4 h-4" />
               </button>
 
               {/* Resend & Back controls */}
