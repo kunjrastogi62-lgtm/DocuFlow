@@ -43,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   return (
-    <header className="h-16 bg-white/70 backdrop-blur-md border-b border-slate-200/50 flex flex-col justify-center px-3 sm:px-6 lg:px-8 z-30 sticky top-0">
+    <header className="h-16 bg-white border-b border-slate-200 flex flex-col justify-center px-3 sm:px-6 lg:px-8 z-30 sticky top-0">
       <div className="flex items-center justify-between gap-2 sm:gap-4 w-full">
         {/* Left: Mobile Menu Toggle & Brand Logo */}
         <div className="flex items-center gap-2 sm:gap-3">

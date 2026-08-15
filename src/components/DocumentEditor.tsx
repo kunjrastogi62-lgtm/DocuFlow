@@ -292,7 +292,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   return (
     <div className="flex flex-col h-screen bg-slate-100 overflow-hidden relative">
       {/* Top Navigation & Menu Bar */}
-      <header className="bg-white/70 backdrop-blur-md border-b border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 shrink-0 z-20 shadow-xs">
+      <header className="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 shrink-0 z-20 shadow-xs">
         {/* Left: Back button & Title input */}
         <div className="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0">
           <button
@@ -507,7 +507,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
       </header>
 
       {/* Formatting Toolbar with smooth touch scrolling */}
-      <div className="bg-white/70 backdrop-blur-md border-b border-slate-200/80 px-2.5 sm:px-4 py-1.5 flex items-center gap-1 overflow-x-auto shrink-0 scrollbar-none z-10 text-slate-700">
+      <div className="bg-white border-b border-slate-200/80 px-2.5 sm:px-4 py-1.5 flex items-center gap-1 overflow-x-auto shrink-0 scrollbar-none z-10 text-slate-700">
         {/* Undo / Redo */}
         <button onClick={() => execCmd('undo')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Undo">
           <Undo className="w-4 h-4" />
