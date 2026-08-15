@@ -17,6 +17,7 @@ import {
 } from './lib/supabase';
 import { supabase } from './lib/supabase';
 import { DocuFlowDocument, UserProfile, ViewTab, DocumentComment, DocumentVersion } from './types';
+import { Background } from './components/Background';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { DocumentDashboard } from './components/DocumentDashboard';
@@ -274,16 +275,12 @@ export default function App() {
   const activeDoc = documents.find((d) => d.id === activeDocId);
 
   return (
-    <div className="min-h-screen bg-slate-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/30 via-slate-50 to-slate-100 text-slate-900 flex flex-col font-sans relative">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-200/20 blur-[100px]" />
-        <div className="absolute top-[60%] -left-[10%] w-[30%] h-[30%] rounded-full bg-indigo-200/20 blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-transparent text-slate-900 flex flex-col font-sans relative">
+      <Background />
       
       {/* If in Editor mode, display full editor */}
       {activeDocId && activeDoc ? (
-        <div className="z-10 flex-1 flex flex-col overflow-hidden">
+        <div className="z-10 flex-1 flex flex-col overflow-hidden bg-white/70 backdrop-blur-xl">
           <DocumentEditor
             doc={activeDoc}
             onGoBack={() => {
@@ -340,21 +337,23 @@ export default function App() {
               onCloseMobile={() => setIsMobileSidebarOpen(false)}
             />
 
-            <DocumentDashboard
-              documents={documents}
-              activeTab={activeTab}
-              selectedCategory={selectedCategory}
-              searchQuery={searchQuery}
-              onOpenDoc={(docId) => setActiveDocId(docId)}
-              onNewDoc={handleCreateNewDocument}
-              onToggleStar={handleToggleStar}
-              onDeleteDoc={handleDeleteDocument}
-              onRestoreDoc={handleRestoreDocument}
-              onShareDoc={(doc) => setActiveDocId(doc.id)}
-              onDuplicateDoc={handleDuplicateDocument}
-              onRenameDoc={handleRenameDocument}
-              onSelectCategory={setSelectedCategory}
-            />
+            <div className="flex-1 flex flex-col relative bg-white/70 backdrop-blur-xl overflow-hidden">
+              <DocumentDashboard
+                documents={documents}
+                activeTab={activeTab}
+                selectedCategory={selectedCategory}
+                searchQuery={searchQuery}
+                onOpenDoc={(docId) => setActiveDocId(docId)}
+                onNewDoc={handleCreateNewDocument}
+                onToggleStar={handleToggleStar}
+                onDeleteDoc={handleDeleteDocument}
+                onRestoreDoc={handleRestoreDocument}
+                onShareDoc={(doc) => setActiveDocId(doc.id)}
+                onDuplicateDoc={handleDuplicateDocument}
+                onRenameDoc={handleRenameDocument}
+                onSelectCategory={setSelectedCategory}
+              />
+            </div>
           </div>
 
           {/* Desktop/Tablet Floating Action Button */}
@@ -367,7 +366,7 @@ export default function App() {
           </button>
 
           {/* Mobile Bottom Navigation Bar (Visible on mobile screens) */}
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2 flex items-center justify-around shadow-lg">
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/70 backdrop-blur-xl border-t border-slate-200/50 px-3 py-2 flex items-center justify-around shadow-lg">
             <button
               onClick={() => {
                 setSelectedCategory(null);
@@ -454,7 +453,7 @@ export default function App() {
           </nav>
 
           {/* Footer Branding on Desktop */}
-          <footer className="hidden md:flex h-11 border-t border-slate-200 bg-white items-center px-8 text-[11px] text-slate-400 justify-between shrink-0">
+          <footer className="hidden md:flex h-11 border-t border-slate-200/50 bg-white/70 backdrop-blur-xl items-center px-8 text-[11px] text-slate-500 justify-between shrink-0">
             <span>© 2026 DocuFlow • Professional Cloud Document Editor</span>
             <span className="font-mono">v2.4.1-stable</span>
           </footer>

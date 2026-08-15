@@ -197,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <aside className="w-64 shrink-0 bg-[#0F172A] flex-col justify-between hidden md:flex text-slate-400 min-h-[calc(100vh-64px)] border-r border-slate-800/60">
+      <aside className="w-64 shrink-0 bg-transparent flex-col justify-between hidden md:flex text-slate-400 min-h-[calc(100vh-64px)] border-r border-white/10">
         {sidebarContent}
       </aside>
 
@@ -211,7 +211,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
 
           {/* Drawer Canvas */}
-          <div className="relative w-4/5 max-w-xs bg-[#0F172A] text-slate-400 h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200">
+          <div className="relative w-4/5 max-w-xs bg-slate-900/70 backdrop-blur-xl text-slate-400 h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </div>
         </div>
