@@ -60,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={onGoHome}
-            className="flex items-center gap-2.5 text-left focus:outline-none group"
+            className="flex-shrink-0 whitespace-nowrap flex items-center gap-2.5 text-left focus:outline-none group"
             title="DocuFlow Home"
           >
             <img 
@@ -103,11 +103,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
           {/* Mobile Search Toggle Button */}
           <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
-            className={`md:hidden p-2 rounded-xl transition-colors ${
+            className={`flex-shrink-0 md:hidden p-2 rounded-xl transition-colors ${
               showMobileSearch || searchQuery 
                 ? 'bg-blue-50 text-blue-600' 
                 : 'text-slate-600 hover:bg-slate-100'
@@ -120,15 +120,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* New Document Button */}
           <button
             onClick={onNewDocument}
-            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-xs flex items-center gap-1.5 transition-all whitespace-nowrap"
+            className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-2.5 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-xs flex items-center gap-1 sm:gap-1.5 transition-all whitespace-nowrap"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>New Document</span>
+            <span className="hidden sm:inline">New Document</span>
+            <span className="sm:hidden">New</span>
           </button>
 
           {/* User Auth Profile */}
           {user ? (
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-1.5 p-1 rounded-full hover:bg-slate-100 transition-colors border border-transparent hover:border-slate-200"
@@ -176,10 +177,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           ) : (
             <button
               onClick={onOpenAuth}
-              className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors"
+              className="flex-shrink-0 whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors"
             >
               <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
-              <span>Sign In</span>
+              <span className="hidden sm:inline">Sign In</span>
             </button>
           )}
         </div>
