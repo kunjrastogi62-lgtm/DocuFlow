@@ -7,6 +7,8 @@ import {
   restoreDocument, 
   getCurrentUser, 
   syncUserProfile,
+  checkDatabaseHealth,
+  DatabaseHealth,
   fetchComments,
   addCommentToSupabase,
   resolveCommentInSupabase,
@@ -31,7 +33,11 @@ import {
   Folder, 
   Plus, 
   Layers,
-  Database
+  Database,
+  WifiOff,
+  Lock,
+  Key,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function App() {
@@ -44,7 +50,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [dbSetupIncomplete, setDbSetupIncomplete] = useState(false);
+  const [dbHealth, setDbHealth] = useState<DatabaseHealth | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Document specific state
@@ -63,6 +69,15 @@ export default function App() {
   // Initialize Auth & Load User Profile
   useEffect(() => {
     async function initAuth() {
+      // Run health check first
+      const health = await checkDatabaseHealth();
+      setDbHealth(health);
+      
+      // If table missing or critical error, stop auth loading to prevent 404 floods
+      if (health.status === 'missing_table' || health.status === 'invalid_url_key' || health.status === 'network_error') {
+        return;
+      }
+
       const currentUser = await getCurrentUser();
       if (currentUser) {
         setUser(currentUser);
@@ -118,11 +133,12 @@ export default function App() {
     const { docs, error } = await fetchDocuments(targetUserId || undefined);
     
     if (error && (error.code === '42P01' || error.message?.includes('Could not find the table'))) {
-      setDbSetupIncomplete(true);
+      setDbHealth({ status: 'missing_table', message: 'The required database tables do not exist.' });
       return; // Do not use silent fallback when setup is just missing
     }
     
-    setDbSetupIncomplete(false);
+    // Only update health to ok if it was previously an error
+    setDbHealth(prev => (prev && prev.status !== 'ok' && prev.status !== 'auth_missing') ? { status: 'ok', message: 'Connected' } : prev);
     setDocuments(docs);
   };
 
@@ -283,15 +299,27 @@ export default function App() {
 
   const activeDoc = documents.find((d) => d.id === activeDocId);
 
-  if (dbSetupIncomplete) {
+  if (dbHealth && dbHealth.status !== 'ok' && dbHealth.status !== 'auth_missing') {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-2xl shadow-xl border border-red-100 max-w-md text-center">
-          <Database className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Database Setup Incomplete</h2>
+          {dbHealth.status === 'missing_table' && <Database className="w-12 h-12 text-red-500 mx-auto mb-4" />}
+          {dbHealth.status === 'network_error' && <WifiOff className="w-12 h-12 text-red-500 mx-auto mb-4" />}
+          {dbHealth.status === 'rls_error' && <Lock className="w-12 h-12 text-red-500 mx-auto mb-4" />}
+          {dbHealth.status === 'invalid_url_key' && <Key className="w-12 h-12 text-red-500 mx-auto mb-4" />}
+          {dbHealth.status === 'unknown' && <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />}
+          
+          <h2 className="text-xl font-bold text-slate-900 mb-2">
+            {dbHealth.status === 'missing_table' ? 'Database Setup Incomplete' : 'Connection Error'}
+          </h2>
           <p className="text-slate-600 mb-6 text-sm">
-            DocuFlow database setup is incomplete. Please run the Supabase database migration in your Supabase SQL Editor.
+            {dbHealth.message}
           </p>
+          {dbHealth.status === 'missing_table' && (
+             <p className="text-slate-500 text-xs">
+                Please run the DocuFlow Supabase SQL migration in your Supabase dashboard to create the 'profiles' and 'documents' tables.
+             </p>
+          )}
         </div>
       </div>
     );

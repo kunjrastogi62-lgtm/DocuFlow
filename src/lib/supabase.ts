@@ -100,14 +100,28 @@ export async function syncUserProfile(user: any): Promise<UserProfile> {
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = await supabase.from('profiles').upsert(profile);
-  if (error) {
-    if (error.code === '42P01' || error.message?.includes('Could not find the table')) {
-      // The user has not created the table yet. 
-      // Do not log excessively, let the frontend 'dbSetupIncomplete' handle it via fetchDocuments
+  try {
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.warn('Profile fetch notice:', fetchError.message);
+      throw fetchError;
+    }
+
+    if (!existingProfile) {
+      const { error: insertError } = await supabase.from('profiles').insert(profile);
+      if (insertError) {
+        console.warn('Profile creation notice:', insertError.message);
+        throw insertError;
+      }
+    }
+  } catch (err: any) {
+    if (err?.code === '42P01' || err?.message?.includes('Could not find the table')) {
       console.warn('Profiles table missing. Need to run SQL migration.');
-    } else {
-      console.warn('Profiles table sync notice:', error);
     }
   }
 
@@ -145,7 +159,7 @@ export async function fetchDocuments(userId?: string): Promise<{ docs: DocuFlowD
     const { data, error } = await supabase
       .from('documents')
       .select('*')
-      .or(`user_id.eq.${userId},access_level.eq.public_read,access_level.eq.public_edit,access_level.eq.shared`)
+      .eq('user_id', userId)
       .order('updated_at', { ascending: false });
 
     if (error) {
@@ -430,4 +444,49 @@ export async function createDocumentVersion(
   const updated = [version, ...current];
   localStorage.setItem(`${LOCAL_VERSIONS_KEY}_${docId}`, JSON.stringify(updated));
   return version;
+}
+
+export type DatabaseHealth = {
+  status: 'ok' | 'missing_table' | 'auth_missing' | 'network_error' | 'invalid_url_key' | 'rls_error' | 'unknown';
+  message: string;
+};
+
+export async function checkDatabaseHealth(): Promise<DatabaseHealth> {
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY || false) {
+    return { status: 'invalid_url_key', message: 'Invalid or missing Supabase URL/Key.' };
+  }
+
+  try {
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    // Test fetch against documents table (limit 1 to be fast)
+    // If not authenticated, this might hit RLS, but if table is missing it returns 42P01
+    const { error: docError } = await supabase.from('documents').select('id').limit(1);
+
+    if (docError) {
+      if (docError.code === '42P01' || docError.message?.includes('Could not find the table')) {
+        return { status: 'missing_table', message: 'The required database tables do not exist in the connected Supabase project.' };
+      }
+      if (docError.code === 'PGRST301' || docError.code === '42501' || docError.message?.toLowerCase().includes('permission')) {
+         return { status: 'rls_error', message: 'Permission denied. Row Level Security (RLS) might be blocking access.' };
+      }
+      if (docError.message?.toLowerCase().includes('fetch') || docError.message?.toLowerCase().includes('network')) {
+        return { status: 'network_error', message: 'Failed to connect to Supabase (Network Error).' };
+      }
+      if (docError.message?.includes('JWT') || docError.message?.includes('api key')) {
+        return { status: 'invalid_url_key', message: 'Invalid API Key or JWT configuration.' };
+      }
+    }
+
+    if (!session) {
+      return { status: 'auth_missing', message: 'User is not authenticated.' };
+    }
+
+    return { status: 'ok', message: 'Database connected successfully.' };
+  } catch (err: any) {
+    if (err.message?.toLowerCase().includes('fetch')) {
+      return { status: 'network_error', message: 'Network error connecting to Supabase.' };
+    }
+    return { status: 'unknown', message: err.message || 'Unknown database error occurred.' };
+  }
 }
