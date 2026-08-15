@@ -180,7 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="flex-shrink-0 whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/80 rounded-xl transition-colors"
             >
               <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />
-              <span className="hidden sm:inline">Sign In</span>
+              <span>Sign In</span>
             </button>
           )}
         </div>

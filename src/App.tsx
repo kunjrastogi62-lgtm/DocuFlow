@@ -326,14 +326,18 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/30 via-slate-50 to-slate-100 text-slate-900 flex flex-col font-sans relative">
-      {/* Decorative background elements */}
+    <div className="min-h-screen dark-tech-gradient text-slate-900 flex flex-col font-sans relative overflow-hidden">
+      {/* Animated Deep Tech Background */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-200/20 blur-[100px]" />
-        <div className="absolute top-[60%] -left-[10%] w-[30%] h-[30%] rounded-full bg-indigo-200/20 blur-[100px]" />
+        <div className="absolute -top-[10%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-blue-600/20 mix-blend-screen blur-[120px] opacity-60 animate-blob" />
+        <div className="absolute top-[20%] -right-[10%] w-[45vw] h-[45vw] rounded-full bg-purple-600/20 mix-blend-screen blur-[120px] opacity-60 animate-blob animation-delay-2000" />
+        <div className="absolute -bottom-[20%] left-[20%] w-[50vw] h-[50vw] rounded-full bg-indigo-600/20 mix-blend-screen blur-[120px] opacity-60 animate-blob animation-delay-4000" />
+        <div className="absolute inset-0 bg-slate-900/30 backdrop-blur-[60px]" />
       </div>
       
-      {/* If in Editor mode, display full editor */}
+      {/* Central Glassmorphism App Wrapper */}
+      <div className="relative z-10 flex-1 flex flex-col w-full h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x lg:border-white/20 lg:shadow-2xl glass-panel overflow-hidden transition-all duration-500">
+        {/* If in Editor mode, display full editor */}
       {activeDocId && activeDoc ? (
         <div className="z-10 flex-1 flex flex-col overflow-hidden">
           <DocumentEditor
@@ -513,6 +517,7 @@ export default function App() {
           </footer>
         </div>
       )}
+      </div>
 
       {/* Auth Modal */}
       <AuthModal
