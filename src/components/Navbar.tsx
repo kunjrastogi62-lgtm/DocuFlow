@@ -120,11 +120,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* New Document Button */}
           <button
             onClick={onNewDocument}
-            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-2.5 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-xs flex items-center gap-1.5 transition-all"
+            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-xs flex items-center gap-1.5 transition-all whitespace-nowrap"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span className="hidden sm:inline">New Document</span>
-            <span className="sm:hidden font-medium">New</span>
+            <span>New Document</span>
           </button>
 
           {/* User Auth Profile */}

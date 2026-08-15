@@ -357,6 +357,15 @@ export default function App() {
             />
           </div>
 
+          {/* Desktop/Tablet Floating Action Button */}
+          <button
+            onClick={() => handleCreateNewDocument()}
+            className="hidden md:flex fixed bottom-14 right-10 z-40 items-center justify-center w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white rounded-full shadow-xl shadow-blue-500/30 border-2 border-white transition-transform hover:scale-105"
+            title="Create New Document"
+          >
+            <Plus className="w-8 h-8 stroke-[2.5]" />
+          </button>
+
           {/* Mobile Bottom Navigation Bar (Visible on mobile screens) */}
           <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2 flex items-center justify-around shadow-lg">
             <button
