@@ -22,6 +22,15 @@ import { Sidebar } from './components/Sidebar';
 import { DocumentDashboard } from './components/DocumentDashboard';
 import { DocumentEditor } from './components/DocumentEditor';
 import { AuthModal } from './components/AuthModal';
+import { 
+  FileText, 
+  Star, 
+  Clock, 
+  Trash2, 
+  Folder, 
+  Plus, 
+  Layers 
+} from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -33,6 +42,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Document specific state
   const [comments, setComments] = useState<DocumentComment[]>([]);
@@ -123,6 +133,7 @@ export default function App() {
   ) => {
     // Close open modals
     setIsAuthModalOpen(false);
+    setIsMobileSidebarOpen(false);
 
     const ownerId = user?.id || 'guest';
     const ownerEmail = user?.email || 'guest@docuflow.app';
@@ -274,27 +285,27 @@ export default function App() {
       {activeDocId && activeDoc ? (
         <div className="z-10 flex-1 flex flex-col overflow-hidden">
           <DocumentEditor
-          doc={activeDoc}
-          onGoBack={() => {
-            setActiveDocId(null);
-            // clear URL params if any
-            if (window.location.search) {
-              window.history.replaceState({}, '', window.location.pathname);
-            }
-          }}
-          onUpdateDocument={handleUpdateDocument}
-          comments={comments}
-          onAddComment={handleAddComment}
-          onResolveComment={handleResolveComment}
-          versions={versions}
-          onCreateVersion={handleCreateVersion}
-          onRestoreVersion={handleRestoreVersion}
-          isSaving={isSaving}
-        />
+            doc={activeDoc}
+            onGoBack={() => {
+              setActiveDocId(null);
+              // clear URL params if any
+              if (window.location.search) {
+                window.history.replaceState({}, '', window.location.pathname);
+              }
+            }}
+            onUpdateDocument={handleUpdateDocument}
+            comments={comments}
+            onAddComment={handleAddComment}
+            onResolveComment={handleResolveComment}
+            versions={versions}
+            onCreateVersion={handleCreateVersion}
+            onRestoreVersion={handleRestoreVersion}
+            isSaving={isSaving}
+          />
         </div>
       ) : (
         /* Dashboard Mode */
-        <div className="z-10 flex-1 flex flex-col overflow-hidden">
+        <div className="z-10 flex-1 flex flex-col overflow-hidden relative">
           <Navbar
             user={user}
             profile={profile}
@@ -303,6 +314,7 @@ export default function App() {
             onNewDocument={() => handleCreateNewDocument()}
             onOpenAuth={() => setIsAuthModalOpen(true)}
             onSignOut={handleSignOut}
+            onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
             onGoHome={() => {
               setActiveDocId(null);
               setActiveTab('all');
@@ -313,11 +325,19 @@ export default function App() {
           <div className="flex-1 flex overflow-hidden">
             <Sidebar
               activeTab={activeTab}
-              onTabChange={setActiveTab}
+              onTabChange={(tab) => {
+                setActiveTab(tab);
+                setIsMobileSidebarOpen(false);
+              }}
               selectedCategory={selectedCategory}
-              onCategorySelect={setSelectedCategory}
+              onCategorySelect={(cat) => {
+                setSelectedCategory(cat);
+                setIsMobileSidebarOpen(false);
+              }}
               onNewDoc={() => handleCreateNewDocument()}
               docCounts={docCounts}
+              isOpenOnMobile={isMobileSidebarOpen}
+              onCloseMobile={() => setIsMobileSidebarOpen(false)}
             />
 
             <DocumentDashboard
@@ -333,11 +353,99 @@ export default function App() {
               onShareDoc={(doc) => setActiveDocId(doc.id)}
               onDuplicateDoc={handleDuplicateDocument}
               onRenameDoc={handleRenameDocument}
+              onSelectCategory={setSelectedCategory}
             />
           </div>
 
-          {/* Footer Branding */}
-          <footer className="h-12 border-t border-slate-200 bg-white flex items-center px-8 text-[11px] text-slate-400 justify-between shrink-0">
+          {/* Mobile Bottom Navigation Bar (Visible on mobile screens) */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2 flex items-center justify-around shadow-lg">
+            <button
+              onClick={() => {
+                setSelectedCategory(null);
+                setActiveTab('all');
+              }}
+              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-semibold transition-all relative ${
+                activeTab === 'all' && selectedCategory === null
+                  ? 'text-blue-600 font-bold'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <FileText className="w-5 h-5" />
+              <span>All Docs</span>
+              {docCounts.all > 0 && (
+                <span className="absolute 1 top-0.5 right-1.5 w-4 h-4 rounded-full bg-blue-100 text-blue-700 text-[9px] font-bold flex items-center justify-center">
+                  {docCounts.all}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => {
+                setSelectedCategory(null);
+                setActiveTab('starred');
+              }}
+              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-semibold transition-all relative ${
+                activeTab === 'starred'
+                  ? 'text-amber-600 font-bold'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Star className="w-5 h-5" />
+              <span>Starred</span>
+              {docCounts.starred > 0 && (
+                <span className="absolute top-0.5 right-1.5 w-4 h-4 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold flex items-center justify-center">
+                  {docCounts.starred}
+                </span>
+              )}
+            </button>
+
+            {/* Mobile Central Floating New Document Button */}
+            <button
+              onClick={() => handleCreateNewDocument()}
+              className="flex items-center justify-center w-12 h-12 -mt-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white rounded-full shadow-lg shadow-blue-500/30 border-2 border-white transition-transform"
+              title="Create New Document"
+            >
+              <Plus className="w-6 h-6 stroke-[2.5]" />
+            </button>
+
+            <button
+              onClick={() => {
+                setSelectedCategory(null);
+                setActiveTab('recent');
+              }}
+              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-semibold transition-all ${
+                activeTab === 'recent'
+                  ? 'text-blue-600 font-bold'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Clock className="w-5 h-5" />
+              <span>Recent</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setSelectedCategory(null);
+                setActiveTab('trash');
+              }}
+              className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-semibold transition-all relative ${
+                activeTab === 'trash'
+                  ? 'text-red-600 font-bold'
+                  : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              <Trash2 className="w-5 h-5" />
+              <span>Trash</span>
+              {docCounts.trash > 0 && (
+                <span className="absolute top-0.5 right-1.5 w-4 h-4 rounded-full bg-red-100 text-red-700 text-[9px] font-bold flex items-center justify-center">
+                  {docCounts.trash}
+                </span>
+              )}
+            </button>
+          </nav>
+
+          {/* Footer Branding on Desktop */}
+          <footer className="hidden md:flex h-11 border-t border-slate-200 bg-white items-center px-8 text-[11px] text-slate-400 justify-between shrink-0">
             <span>© 2026 DocuFlow • Professional Cloud Document Editor</span>
             <span className="font-mono">v2.4.1-stable</span>
           </footer>
@@ -347,12 +455,20 @@ export default function App() {
       {/* Auth Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
+        canClose={true}
         onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => {
+        onSuccess={async () => {
+          const currentUser = await getCurrentUser();
+          if (currentUser) {
+            setUser(currentUser);
+            const p = await syncUserProfile(currentUser);
+            setProfile(p);
+            loadDocs(currentUser.id);
+          }
           setIsAuthModalOpen(false);
-          if (user?.id) loadDocs(user.id);
         }}
       />
     </div>
   );
 }
+

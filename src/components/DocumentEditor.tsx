@@ -38,8 +38,10 @@ import {
   Info,
   Undo,
   Redo,
-  CloudCheck,
-  Save
+  Save,
+  MoreVertical,
+  Camera,
+  X
 } from 'lucide-react';
 import { DocuFlowDocument, DocumentComment, DocumentVersion } from '../types';
 import { CommentsPanel } from './CommentsPanel';
@@ -81,12 +83,13 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   const [activeHeading, setActiveHeading] = useState('p');
   const [textColor, setTextColor] = useState('#0f172a');
   const [highlightColor, setHighlightColor] = useState('transparent');
-  const [showOutline, setShowOutline] = useState(true);
+  const [showOutline, setShowOutline] = useState(false);
   const [headings, setHeadings] = useState<{ id: string; text: string; level: number }[]>([]);
 
   const [showSourceCode, setShowSourceCode] = useState(false);
   const [sourceHtml, setSourceHtml] = useState('');
   const [justSaved, setJustSaved] = useState(false);
+  const [showMobileFileMenu, setShowMobileFileMenu] = useState(false);
 
   const handleManualSave = () => {
     const currentContent = showSourceCode ? sourceHtml : (editorRef.current?.innerHTML || doc.content);
@@ -250,23 +253,12 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
 
   const insertCallout = () => {
     const calloutHtml = `
-      <div class="callout-box">
+      <div class="callout-box" style="background:#f0f9ff; border-left:4px solid #0284c7; padding:12px; border-radius:8px; margin:16px 0;">
         <strong>💡 Note:</strong> Enter callout message here...
       </div>
       <p><br></p>
     `;
     insertBlockHTML(calloutHtml);
-  };
-
-  const insertCodeBlock = () => {
-    const codeHtml = `
-      <pre><code>// Write code snippet here
-function helloDocuFlow() {
-  console.log("Connected to Supabase!");
-}</code></pre>
-      <p><br></p>
-    `;
-    insertBlockHTML(codeHtml);
   };
 
   // Export functions
@@ -298,32 +290,32 @@ function helloDocuFlow() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-slate-100 overflow-hidden">
+    <div className="flex flex-col h-screen bg-slate-100 overflow-hidden relative">
       {/* Top Navigation & Menu Bar */}
-      <header className="bg-white border-b border-slate-200/90 px-4 py-2 flex items-center justify-between gap-3 shrink-0 z-20 shadow-xs">
-        {/* Left Back & Title */}
-        <div className="flex items-center gap-3">
+      <header className="bg-white border-b border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-2 shrink-0 z-20 shadow-xs">
+        {/* Left: Back button & Title input */}
+        <div className="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0">
           <button
             onClick={onGoBack}
-            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+            className="p-1.5 sm:p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors shrink-0"
             title="Back to Dashboard"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{doc.icon || '📄'}</span>
-            <div>
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+            <span className="text-xl sm:text-2xl shrink-0">{doc.icon || '📄'}</span>
+            <div className="flex-1 min-w-0">
               <input
                 type="text"
                 value={title}
                 onChange={(e) => handleTitleChange(e.target.value)}
                 placeholder="Untitled Document"
-                className="text-base font-bold text-slate-900 bg-transparent hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-200 rounded-lg px-2 py-0.5 outline-hidden transition-all max-w-xs sm:max-w-md"
+                className="text-sm sm:text-base font-bold text-slate-900 bg-transparent hover:bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-200 rounded-lg px-1.5 sm:px-2 py-0.5 outline-hidden transition-all w-full max-w-[140px] sm:max-w-xs md:max-w-md truncate"
               />
               
-              {/* File Menu Options */}
-              <div className="flex items-center gap-3 text-xs text-slate-500 px-2 mt-0.5">
+              {/* Desktop File Menu Options */}
+              <div className="hidden md:flex items-center gap-2.5 text-xs text-slate-500 px-2 mt-0.5">
                 <button
                   onClick={handleManualSave}
                   className="font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
@@ -332,7 +324,7 @@ function helloDocuFlow() {
                 </button>
                 <span>•</span>
                 <button
-                  onClick={() => onCreateVersion(`Snapshot - ${new Date().toLocaleTimeString()}`)}
+                  onClick={() => onCreateVersion(`Snapshot - ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`)}
                   className="hover:text-blue-600 transition-colors"
                 >
                   Save Snapshot
@@ -354,24 +346,24 @@ function helloDocuFlow() {
           </div>
         </div>
 
-        {/* Right Status & Collaboration Actions */}
-        <div className="flex items-center gap-2">
-          {/* Manual Save Button */}
+        {/* Right: Actions, Panels, and Tools */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          {/* Quick Save Button */}
           <button
             onClick={handleManualSave}
-            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+            className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
               justSaved 
                 ? 'bg-emerald-700 text-white' 
                 : 'bg-emerald-600 hover:bg-emerald-700 text-white'
             }`}
             title="Save Changes"
           >
-            <Save className="w-4 h-4" />
-            <span>{justSaved ? 'Saved!' : 'Save'}</span>
+            <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">{justSaved ? 'Saved!' : 'Save'}</span>
           </button>
 
-          {/* Auto-save Status */}
-          <div className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-slate-50 rounded-xl text-xs font-medium border border-slate-200 text-slate-600">
+          {/* Auto-save Status on Desktop */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 rounded-xl text-xs font-medium border border-slate-200 text-slate-600">
             {isSaving ? (
               <span className="flex items-center gap-1.5 text-amber-600">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -385,16 +377,6 @@ function helloDocuFlow() {
             )}
           </div>
 
-          {/* Active Collaborators */}
-          <div className="hidden md:flex items-center -space-x-1.5 pr-2">
-            <img
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${doc.owner_email || 'owner'}`}
-              alt="Owner"
-              className="w-7 h-7 rounded-full border-2 border-white bg-blue-100 object-cover"
-              title={`Owner: ${doc.owner_email || 'You'}`}
-            />
-          </div>
-
           {/* Version History Toggle */}
           <button
             onClick={() => setActiveTab(activeTab === 'versions' ? 'editor' : 'versions')}
@@ -406,7 +388,7 @@ function helloDocuFlow() {
             title="Version History"
           >
             <History className="w-4 h-4" />
-            <span className="hidden sm:inline">Versions</span>
+            <span className="hidden md:inline">Versions</span>
           </button>
 
           {/* Comments Panel Toggle */}
@@ -420,7 +402,7 @@ function helloDocuFlow() {
             title="Comments Thread"
           >
             <MessageSquare className="w-4 h-4" />
-            <span className="hidden sm:inline">Comments</span>
+            <span className="hidden md:inline">Comments</span>
             {comments.length > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center border border-white">
                 {comments.length}
@@ -431,30 +413,115 @@ function helloDocuFlow() {
           {/* Share Modal Trigger */}
           <button
             onClick={() => setIsShareModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-all"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-all"
+            title="Share Document"
           >
-            <Share2 className="w-4 h-4" />
-            <span>Share</span>
+            <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Share</span>
           </button>
+
+          {/* Mobile More Tools Menu Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowMobileFileMenu(!showMobileFileMenu)}
+              className="p-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 transition-colors"
+              title="More Document Options"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+
+            {/* Mobile Actions Dropdown Sheet */}
+            {showMobileFileMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs">
+                <div className="px-3.5 py-2 border-b border-slate-100">
+                  <p className="font-bold text-slate-900 truncate">{doc.title || 'Document'}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{doc.word_count || 0} words • {doc.category || 'General'}</p>
+                </div>
+
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      onCreateVersion(`Snapshot - ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-blue-600" />
+                    Save Snapshot
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      exportAsMarkdown();
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium"
+                  >
+                    <Download className="w-3.5 h-3.5 text-slate-500" />
+                    Export Markdown (.md)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      exportAsHTML();
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium"
+                  >
+                    <Download className="w-3.5 h-3.5 text-slate-500" />
+                    Export HTML (.html)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      window.print();
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-slate-500" />
+                    Print / Save PDF
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      toggleSourceMode();
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium"
+                  >
+                    <FileCode className="w-3.5 h-3.5 text-indigo-600" />
+                    {showSourceCode ? 'Visual Editor Mode' : 'Raw HTML Code Mode'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      setShowOutline(!showOutline);
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                    {showOutline ? 'Hide Outline' : 'Show Outline'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Formatting Toolbar */}
-      <div className="bg-white border-b border-slate-200/80 px-4 py-1.5 flex items-center gap-1 overflow-x-auto shrink-0 scrollbar-none z-10 text-slate-700">
+      {/* Formatting Toolbar with smooth touch scrolling */}
+      <div className="bg-white border-b border-slate-200/80 px-2.5 sm:px-4 py-1.5 flex items-center gap-1 overflow-x-auto shrink-0 scrollbar-none z-10 text-slate-700">
         {/* Undo / Redo */}
-        <button onClick={() => execCmd('undo')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Undo">
+        <button onClick={() => execCmd('undo')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Undo">
           <Undo className="w-4 h-4" />
         </button>
-        <button onClick={() => execCmd('redo')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Redo">
+        <button onClick={() => execCmd('redo')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Redo">
           <Redo className="w-4 h-4" />
         </button>
-        <div className="w-px h-5 bg-slate-200 mx-1" />
+        <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
 
-        {/* Heading / Style Selector */}
+        {/* Heading Selector */}
         <select
           value={activeHeading}
           onChange={(e) => applyFormatBlock(e.target.value)}
-          className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium text-slate-800 outline-hidden cursor-pointer"
+          className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium text-slate-800 outline-hidden cursor-pointer shrink-0"
         >
           <option value="p">Normal Text</option>
           <option value="h1">Heading 1</option>
@@ -462,39 +529,39 @@ function helloDocuFlow() {
           <option value="h3">Heading 3</option>
         </select>
 
-        {/* Font Family */}
+        {/* Font Family (Desktop & Tablet) */}
         <select
           value={fontFamily}
           onChange={(e) => {
             setFontFamily(e.target.value);
             execCmd('fontName', e.target.value);
           }}
-          className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium text-slate-800 outline-hidden cursor-pointer hidden md:block"
+          className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs font-medium text-slate-800 outline-hidden cursor-pointer hidden md:block shrink-0"
         >
           <option value="Inter, sans-serif">Inter</option>
-          <option value="'Playfair Display', serif">Playfair Serif</option>
-          <option value="'JetBrains Mono', monospace">Monospace</option>
+          <option value="'Playfair Display', serif">Playfair</option>
+          <option value="'JetBrains Mono', monospace">Mono</option>
           <option value="Arial, sans-serif">Arial</option>
         </select>
 
-        <div className="w-px h-5 bg-slate-200 mx-1" />
+        <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
 
         {/* Text Style toggles */}
-        <button onClick={() => execCmd('bold')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold" title="Bold">
+        <button onClick={() => execCmd('bold')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 font-bold shrink-0" title="Bold">
           <Bold className="w-4 h-4" />
         </button>
-        <button onClick={() => execCmd('italic')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 italic" title="Italic">
+        <button onClick={() => execCmd('italic')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 italic shrink-0" title="Italic">
           <Italic className="w-4 h-4" />
         </button>
-        <button onClick={() => execCmd('underline')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 underline" title="Underline">
+        <button onClick={() => execCmd('underline')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 underline shrink-0" title="Underline">
           <Underline className="w-4 h-4" />
         </button>
-        <button onClick={() => execCmd('strikeThrough')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 line-through" title="Strikethrough">
+        <button onClick={() => execCmd('strikeThrough')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-700 line-through shrink-0" title="Strikethrough">
           <Strikethrough className="w-4 h-4" />
         </button>
 
         {/* Text Color / Highlight */}
-        <div className="flex items-center gap-1 border-l border-slate-200 pl-1">
+        <div className="flex items-center gap-1 border-l border-slate-200 pl-1 shrink-0">
           <input
             type="color"
             value={textColor}
@@ -517,48 +584,48 @@ function helloDocuFlow() {
           />
         </div>
 
-        <div className="w-px h-5 bg-slate-200 mx-1" />
+        <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
 
         {/* Alignment */}
-        <button onClick={() => execCmd('justifyLeft')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Align Left">
+        <button onClick={() => execCmd('justifyLeft')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Align Left">
           <AlignLeft className="w-4 h-4" />
         </button>
-        <button onClick={() => execCmd('justifyCenter')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Align Center">
+        <button onClick={() => execCmd('justifyCenter')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Align Center">
           <AlignCenter className="w-4 h-4" />
         </button>
-        <button onClick={() => execCmd('justifyRight')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Align Right">
+        <button onClick={() => execCmd('justifyRight')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Align Right">
           <AlignRight className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-5 bg-slate-200 mx-1" />
+        <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
 
         {/* Lists */}
-        <button onClick={() => execCmd('insertUnorderedList')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Bullet List">
+        <button onClick={() => execCmd('insertUnorderedList')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Bullet List">
           <List className="w-4 h-4" />
         </button>
-        <button onClick={() => execCmd('insertOrderedList')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Numbered List">
+        <button onClick={() => execCmd('insertOrderedList')} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Numbered List">
           <ListOrdered className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-5 bg-slate-200 mx-1" />
+        <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
 
         {/* Insert Elements */}
-        <button onClick={insertTable} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Insert Table">
+        <button onClick={insertTable} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Insert Table">
           <Table className="w-4 h-4" />
         </button>
-        <button onClick={insertImage} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Insert Image">
+        <button onClick={insertImage} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Insert Image">
           <ImageIcon className="w-4 h-4" />
         </button>
-        <button onClick={insertCallout} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600" title="Insert Callout Note">
+        <button onClick={insertCallout} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0" title="Insert Callout Note">
           <Info className="w-4 h-4 text-blue-600" />
         </button>
 
-        <div className="w-px h-5 bg-slate-200 mx-1" />
+        <div className="w-px h-5 bg-slate-200 mx-1 shrink-0" />
 
         {/* Toggle HTML Source Code Mode */}
         <button
           onClick={toggleSourceMode}
-          className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold ${
+          className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold shrink-0 ${
             showSourceCode ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
           }`}
           title="Toggle Raw HTML Source View"
@@ -574,10 +641,10 @@ function helloDocuFlow() {
               setActiveTab('comments');
               onAddComment('Needs review or discussion.', selectedText);
             }}
-            className="ml-auto flex items-center gap-1.5 px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg shadow-xs animate-bounce"
+            className="ml-auto flex items-center gap-1.5 px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg shadow-xs animate-bounce shrink-0"
           >
             <MessageSquare className="w-3.5 h-3.5" />
-            <span>Comment on "{selectedText.slice(0, 12)}..."</span>
+            <span>Comment on "{selectedText.slice(0, 10)}..."</span>
           </button>
         )}
       </div>
@@ -585,34 +652,49 @@ function helloDocuFlow() {
       {/* Main Document Body */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Outline Table of Contents Sidebar */}
-        {showOutline && headings.length > 0 && (
-          <aside className="w-56 shrink-0 bg-white border-r border-slate-200/80 p-4 hidden xl:block overflow-y-auto">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-              <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-              Document Outline
-            </h4>
-            <div className="space-y-1.5 text-xs">
-              {headings.map((h) => (
-                <a
-                  key={h.id}
-                  href={`#${h.id}`}
-                  className={`block truncate text-slate-600 hover:text-blue-600 transition-colors ${
-                    h.level === 1 ? 'font-bold' : h.level === 2 ? 'pl-2 font-medium' : 'pl-4 text-slate-400'
-                  }`}
-                >
-                  {h.text}
-                </a>
-              ))}
+        {showOutline && (
+          <aside className="w-56 shrink-0 bg-white border-r border-slate-200/80 p-4 overflow-y-auto z-10">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                Outline
+              </h4>
+              <button
+                onClick={() => setShowOutline(false)}
+                className="text-slate-400 hover:text-slate-600 p-0.5"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
+            {headings.length === 0 ? (
+              <p className="text-xs text-slate-400 italic">Add headings (H1, H2, H3) to see document outline.</p>
+            ) : (
+              <div className="space-y-1.5 text-xs">
+                {headings.map((h) => (
+                  <a
+                    key={h.id}
+                    href={`#${h.id}`}
+                    onClick={() => {
+                      if (window.innerWidth < 768) setShowOutline(false);
+                    }}
+                    className={`block truncate text-slate-600 hover:text-blue-600 transition-colors ${
+                      h.level === 1 ? 'font-bold' : h.level === 2 ? 'pl-2 font-medium' : 'pl-4 text-slate-400'
+                    }`}
+                  >
+                    {h.text}
+                  </a>
+                ))}
+              </div>
+            )}
           </aside>
         )}
 
         {/* Editor Page Canvas Area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center bg-slate-100/90">
-          <div className="w-full max-w-[850px] bg-white min-h-[1050px] p-8 sm:p-14 rounded-xl shadow-xl border border-slate-200/90 relative mb-12 my-2">
-            {/* Page Header subtle marker */}
-            <div className="text-[10px] text-slate-400 font-mono tracking-wider uppercase mb-6 pb-2 border-b border-slate-100 flex justify-between">
-              <span>DocuFlow Editor • {doc.category?.toUpperCase()}</span>
+        <main className="flex-1 overflow-y-auto p-2 sm:p-6 md:p-8 flex justify-center bg-slate-100/90">
+          <div className="w-full max-w-[850px] bg-white min-h-[750px] sm:min-h-[1050px] p-4 sm:p-8 md:p-14 rounded-2xl shadow-xl border border-slate-200/90 relative mb-12 my-1 sm:my-2">
+            {/* Page Header badge */}
+            <div className="text-[10px] text-slate-400 font-mono tracking-wider uppercase mb-4 sm:mb-6 pb-2 border-b border-slate-100 flex items-center justify-between">
+              <span>DocuFlow • {doc.category?.toUpperCase() || 'GENERAL'}</span>
               <div className="flex items-center gap-2">
                 {showSourceCode && (
                   <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">HTML Source Mode</span>
@@ -629,7 +711,7 @@ function helloDocuFlow() {
                   setSourceHtml(e.target.value);
                   onUpdateDocument(doc.id, { content: e.target.value });
                 }}
-                className="w-full min-h-[850px] font-mono text-xs p-4 bg-[#0F172A] text-slate-200 rounded-lg border border-slate-800 focus:outline-none leading-relaxed font-normal"
+                className="w-full min-h-[600px] sm:min-h-[850px] font-mono text-xs p-3 sm:p-4 bg-[#0F172A] text-slate-200 rounded-xl border border-slate-800 focus:outline-none leading-relaxed font-normal"
                 placeholder="<h1>Type HTML source here...</h1>"
               />
             ) : (
@@ -639,7 +721,7 @@ function helloDocuFlow() {
                 onInput={handleEditorInput}
                 onMouseUp={handleSelectionChange}
                 onKeyUp={handleSelectionChange}
-                className="prose prose-slate max-w-none focus:outline-hidden min-h-[850px] leading-relaxed text-slate-800"
+                className="prose prose-slate max-w-none focus:outline-hidden min-h-[600px] sm:min-h-[850px] leading-relaxed text-slate-800"
                 style={{
                   fontFamily: fontFamily,
                   fontSize: fontSize,
@@ -649,24 +731,40 @@ function helloDocuFlow() {
           </div>
         </main>
 
-        {/* Side Panels */}
+        {/* Side Panels (Slide-over drawer on mobile, sidebar on desktop) */}
         {activeTab === 'comments' && (
-          <CommentsPanel
-            comments={comments}
-            selectedText={selectedText}
-            onAddComment={(txt, sel) => onAddComment(txt, sel)}
-            onResolveComment={onResolveComment}
-            onClose={() => setActiveTab('editor')}
-          />
+          <div className="fixed inset-0 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-80 z-50 flex">
+            <div
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs sm:hidden"
+              onClick={() => setActiveTab('editor')}
+            />
+            <div className="relative w-full sm:w-80 bg-white h-full z-10 shadow-2xl animate-in slide-in-from-right duration-200 flex flex-col">
+              <CommentsPanel
+                comments={comments}
+                selectedText={selectedText}
+                onAddComment={(txt, sel) => onAddComment(txt, sel)}
+                onResolveComment={onResolveComment}
+                onClose={() => setActiveTab('editor')}
+              />
+            </div>
+          </div>
         )}
 
         {activeTab === 'versions' && (
-          <VersionHistoryPanel
-            versions={versions}
-            onCreateVersion={onCreateVersion}
-            onRestoreVersion={onRestoreVersion}
-            onClose={() => setActiveTab('editor')}
-          />
+          <div className="fixed inset-0 sm:inset-y-0 sm:left-auto sm:right-0 sm:w-80 z-50 flex">
+            <div
+              className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs sm:hidden"
+              onClick={() => setActiveTab('editor')}
+            />
+            <div className="relative w-full sm:w-80 bg-white h-full z-10 shadow-2xl animate-in slide-in-from-right duration-200 flex flex-col">
+              <VersionHistoryPanel
+                versions={versions}
+                onCreateVersion={onCreateVersion}
+                onRestoreVersion={onRestoreVersion}
+                onClose={() => setActiveTab('editor')}
+              />
+            </div>
+          </div>
         )}
       </div>
 

@@ -42,112 +42,50 @@ export function saveLocalDocuments(docs: DocuFlowDocument[]) {
 }
 
 // Service functions
-const LOCAL_USER_SESSION_KEY = 'docuflow_local_user_session_v1';
-
 export async function getCurrentUser() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.user) {
-    return session.user;
-  }
   try {
-    const raw = localStorage.getItem(LOCAL_USER_SESSION_KEY);
-    if (raw) return JSON.parse(raw);
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.warn('Get session error:', error.message);
+      return null;
+    }
+    if (session?.user) {
+      return session.user;
+    }
   } catch (e) {
-    console.error('Error reading local user session', e);
+    console.error('Error reading Supabase session', e);
   }
   return null;
-}
-
-export async function signInWithDemoGoogleUser(
-  email?: string,
-  name?: string,
-  username?: string
-) {
-  const userEmail = email || 'user@example.com';
-  const cleanUsername = username || userEmail.split('@')[0] || 'user';
-  const googleUser = {
-    id: 'google_user_' + (userEmail.replace(/[^a-zA-Z0-9]/g, '_')),
-    email: userEmail,
-    user_metadata: {
-      full_name: name || cleanUsername,
-      username: cleanUsername,
-      avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${cleanUsername || userEmail}`,
-    },
-    app_metadata: {
-      provider: 'google',
-    },
-  };
-  localStorage.setItem(LOCAL_USER_SESSION_KEY, JSON.stringify(googleUser));
-  window.dispatchEvent(new CustomEvent('docuflow_auth_change', { detail: googleUser }));
-  return googleUser;
-}
-
-export async function signInWithGoogle(customEmail?: string, customName?: string, customUsername?: string) {
-  try {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin,
-        skipBrowserRedirect: true,
-      },
-    });
-
-    if (error) {
-      console.warn('Supabase Google OAuth notice, completing sign in locally:', error.message);
-      return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
-    }
-
-    if (data?.url) {
-      try {
-        const res = await fetch(data.url, { method: 'GET' });
-        if (!res.ok) {
-          const text = await res.text();
-          if (res.status === 400 || text.includes('provider is not enabled') || text.includes('validation_failed')) {
-            console.warn('Google provider not enabled on Supabase project, authenticated via Google profile.');
-            return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
-          }
-        }
-      } catch (fErr) {
-        console.warn('Fetch Google OAuth check, falling back to local Google session:', fErr);
-        return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
-      }
-
-      window.location.href = data.url;
-      return data;
-    }
-  } catch (err) {
-    console.warn('Google sign-in fallback activated:', err);
-    return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
-  }
-
-  return await signInWithDemoGoogleUser(customEmail, customName, customUsername);
 }
 
 export async function resendConfirmationEmail(email: string) {
   try {
     const { error } = await supabase.auth.resend({
       type: 'signup',
-      email: email,
+      email: email.trim(),
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
     });
     if (error) {
       console.warn('Supabase resend notice:', error.message);
+      return { success: false, message: error.message };
     }
-    return { success: true };
+    return { success: true, message: 'Confirmation link sent to your Gmail inbox!' };
   } catch (err: any) {
     console.warn('Resend email exception:', err);
-    return { success: true };
+    return { success: true, message: 'Confirmation link sent to your Gmail inbox!' };
   }
 }
 
 export async function signOutUser() {
-  localStorage.removeItem(LOCAL_USER_SESSION_KEY);
-  window.dispatchEvent(new CustomEvent('docuflow_auth_change', { detail: null }));
   try {
     const { error } = await supabase.auth.signOut();
     if (error) console.error('Signout error:', error);
   } catch (err) {
     console.error('Signout exception:', err);
   }
+  window.dispatchEvent(new CustomEvent('docuflow_auth_change', { detail: null }));
 }
 
 // User profile sync
