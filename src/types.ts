@@ -40,8 +40,8 @@ export interface DocuFlowDocument {
   id: string;
   title: string;
   content: string;
-  owner_id: string;
-  owner_email?: string;
+  user_id: string;
+  user_email?: string;
   is_starred: boolean;
   is_archived: boolean;
   cover_image?: string;

@@ -100,10 +100,9 @@ export async function syncUserProfile(user: any): Promise<UserProfile> {
     updated_at: new Date().toISOString(),
   };
 
-  try {
-    await supabase.from('profiles').upsert(profile);
-  } catch (err) {
-    console.warn('Profiles table sync notice:', err);
+  const { error } = await supabase.from('profiles').upsert(profile);
+  if (error) {
+    console.warn('Profiles table sync notice:', error);
   }
 
   // Migrate guest documents to the newly signed-in user
@@ -111,11 +110,11 @@ export async function syncUserProfile(user: any): Promise<UserProfile> {
     const localDocs = getLocalDocuments();
     let modified = false;
     const migratedDocs = localDocs.map(d => {
-      if (d.owner_id === 'guest') {
+      if (d.user_id === 'guest') {
         modified = true;
         // Optionally update in supabase in background, but updating local is enough
         // since Supabase sync would normally happen on save.
-        return { ...d, owner_id: user.id, owner_email: profile.email };
+        return { ...d, user_id: user.id, user_email: profile.email };
       }
       return d;
     });
@@ -130,9 +129,9 @@ export async function syncUserProfile(user: any): Promise<UserProfile> {
 }
 
 // Fetch documents from Supabase with fallback
-export async function fetchDocuments(userId?: string): Promise<{ docs: DocuFlowDocument[]; isLocal: boolean }> {
+export async function fetchDocuments(userId?: string): Promise<{ docs: DocuFlowDocument[]; isLocal: boolean; error?: any }> {
   if (!userId) {
-    const local = getLocalDocuments().filter(d => d.owner_id === 'guest');
+    const local = getLocalDocuments().filter(d => d.user_id === 'guest');
     return { docs: local, isLocal: true };
   }
 
@@ -140,13 +139,16 @@ export async function fetchDocuments(userId?: string): Promise<{ docs: DocuFlowD
     const { data, error } = await supabase
       .from('documents')
       .select('*')
-      .or(`owner_id.eq.${userId},access_level.eq.public_read,access_level.eq.public_edit,access_level.eq.shared`)
+      .or(`user_id.eq.${userId},access_level.eq.public_read,access_level.eq.public_edit,access_level.eq.shared`)
       .order('updated_at', { ascending: false });
 
     if (error) {
-      console.warn('Supabase fetch docs error, using local/cached docs:', error.message);
-      const local = getLocalDocuments().filter(d => d.owner_id === userId || d.owner_id === 'guest');
-      return { docs: local, isLocal: true };
+      console.warn('Supabase fetch docs error:', error.message);
+      if (error.code === '42P01' || error.message.includes('Could not find the table')) {
+        return { docs: [], isLocal: false, error };
+      }
+      const local = getLocalDocuments().filter(d => d.user_id === userId || d.user_id === 'guest');
+      return { docs: local, isLocal: true, error };
     }
 
     if (data && data.length > 0) {
@@ -155,11 +157,11 @@ export async function fetchDocuments(userId?: string): Promise<{ docs: DocuFlowD
     }
 
     // Check local fallback
-    const local = getLocalDocuments().filter(d => d.owner_id === userId);
+    const local = getLocalDocuments().filter(d => d.user_id === userId);
     return { docs: local.length > 0 ? local : (data as DocuFlowDocument[] || []), isLocal: false };
   } catch (err) {
     console.error('Fetch documents exception:', err);
-    return { docs: getLocalDocuments(), isLocal: true };
+    return { docs: getLocalDocuments(), isLocal: true, error: err };
   }
 }
 
@@ -199,8 +201,8 @@ export async function createDocument(
     id: crypto.randomUUID(),
     title: initialTitle,
     content: initialContent,
-    owner_id: userId,
-    owner_email: userEmail,
+    user_id: userId,
+    user_email: userEmail,
     is_starred: false,
     is_archived: false,
     icon: icon,

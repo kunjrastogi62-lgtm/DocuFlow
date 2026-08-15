@@ -1,5 +1,5 @@
-export const DOCUFLOW_SUPABASE_SQL = `
--- DocuFlow Complete Supabase Schema Setup Script
+const fs = require('fs');
+const sql = `-- DocuFlow Complete Supabase Schema Setup Script
 -- Paste and run this script in your Supabase SQL Editor (https://app.supabase.com)
 
 -- 1. Create Profiles Table
@@ -100,5 +100,5 @@ CREATE POLICY "Allow all on document_versions" ON public.document_versions FOR A
 -- 8. Enable Realtime Publications
 ALTER PUBLICATION supabase_realtime ADD TABLE public.documents;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.comments;
-
 `;
+fs.writeFileSync('src/lib/sqlSchema.ts', `export const DOCUFLOW_SUPABASE_SQL = \`\n${sql}\n\`;\n`);

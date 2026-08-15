@@ -30,7 +30,8 @@ import {
   Trash2, 
   Folder, 
   Plus, 
-  Layers 
+  Layers,
+  Database
 } from 'lucide-react';
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [dbSetupIncomplete, setDbSetupIncomplete] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Document specific state
@@ -113,7 +115,14 @@ export default function App() {
   // Fetch documents from Supabase with fallback
   const loadDocs = async (overrideUserId?: string | null) => {
     const targetUserId = overrideUserId !== undefined ? overrideUserId : user?.id;
-    const { docs } = await fetchDocuments(targetUserId || undefined);
+    const { docs, error } = await fetchDocuments(targetUserId || undefined);
+    
+    if (error && (error.code === '42P01' || error.message?.includes('Could not find the table'))) {
+      setDbSetupIncomplete(true);
+      return; // Do not use silent fallback when setup is just missing
+    }
+    
+    setDbSetupIncomplete(false);
     setDocuments(docs);
   };
 
@@ -136,16 +145,16 @@ export default function App() {
     setIsAuthModalOpen(false);
     setIsMobileSidebarOpen(false);
 
-    const ownerId = user?.id || 'guest';
-    const ownerEmail = user?.email || 'guest@docuflow.app';
+    const userId = user?.id || 'guest';
+    const userEmail = user?.email || 'guest@docuflow.app';
 
     const { wordCount, charCount } = calculateCounts(content);
     const newDoc: DocuFlowDocument = {
       id: crypto.randomUUID(),
       title,
       content,
-      owner_id: ownerId,
-      owner_email: ownerEmail,
+      user_id: userId,
+      user_email: userEmail,
       is_starred: false,
       is_archived: false,
       icon,
@@ -162,7 +171,7 @@ export default function App() {
     setActiveDocId(newDoc.id);
 
     // Persist in background
-    createDocument(ownerId, ownerEmail, title, content, category, icon, newDoc);
+    createDocument(userId, userEmail, title, content, category, icon, newDoc);
   };
 
   // Update Document with Debounced auto-save
@@ -207,11 +216,11 @@ export default function App() {
 
   // Duplicate document
   const handleDuplicateDocument = async (doc: DocuFlowDocument) => {
-    const ownerId = user?.id || 'guest';
-    const ownerEmail = user?.email || 'guest@docuflow.app';
+    const userId = user?.id || 'guest';
+    const userEmail = user?.email || 'guest@docuflow.app';
     const dupDoc = await createDocument(
-      ownerId,
-      ownerEmail,
+      userId,
+      userEmail,
       `${doc.title} (Copy)`,
       doc.content,
       doc.category,
@@ -273,6 +282,20 @@ export default function App() {
   };
 
   const activeDoc = documents.find((d) => d.id === activeDocId);
+
+  if (dbSetupIncomplete) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-xl border border-red-100 max-w-md text-center">
+          <Database className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Database Setup Incomplete</h2>
+          <p className="text-slate-600 mb-6 text-sm">
+            DocuFlow database setup is incomplete. Please run the Supabase database migration in your Supabase SQL Editor.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/30 via-slate-50 to-slate-100 text-slate-900 flex flex-col font-sans relative">
