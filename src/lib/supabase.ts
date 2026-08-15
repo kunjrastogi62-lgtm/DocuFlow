@@ -102,7 +102,13 @@ export async function syncUserProfile(user: any): Promise<UserProfile> {
 
   const { error } = await supabase.from('profiles').upsert(profile);
   if (error) {
-    console.warn('Profiles table sync notice:', error);
+    if (error.code === '42P01' || error.message?.includes('Could not find the table')) {
+      // The user has not created the table yet. 
+      // Do not log excessively, let the frontend 'dbSetupIncomplete' handle it via fetchDocuments
+      console.warn('Profiles table missing. Need to run SQL migration.');
+    } else {
+      console.warn('Profiles table sync notice:', error);
+    }
   }
 
   // Migrate guest documents to the newly signed-in user
