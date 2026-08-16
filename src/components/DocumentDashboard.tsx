@@ -36,6 +36,7 @@ interface DocumentDashboardProps {
   onDuplicateDoc: (doc: DocuFlowDocument) => void;
   onRenameDoc: (docId: string, newTitle: string) => void;
   onSelectCategory?: (category: string | null) => void;
+  theme?: 'light' | 'dark';
 }
 
 export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
@@ -52,6 +53,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   onDuplicateDoc,
   onRenameDoc,
   onSelectCategory,
+  theme = 'dark',
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'updated' | 'title' | 'created'>('updated');
@@ -159,14 +161,18 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   const showHero = activeTab === 'all' && !searchQuery && !selectedCategory;
 
   return (
-    <div className="flex-1 p-3.5 sm:p-6 lg:p-8 md:overflow-y-auto max-w-6xl mx-auto w-full space-y-8 sm:space-y-12 pb-20 md:pb-12 text-slate-200">
+    <div className={`flex-1 p-3.5 sm:p-6 lg:p-8 md:overflow-y-auto max-w-6xl mx-auto w-full space-y-8 sm:space-y-12 pb-20 md:pb-12 transition-colors duration-300 ${theme === 'light' ? 'text-slate-700' : 'text-slate-200'}`}>
       
       {/* 🚀 SCREENSHOT RECREATION HERO SECTION */}
       {showHero && (
         <div className="flex flex-col items-center justify-center pt-16 pb-16 sm:pt-24 sm:pb-24 relative z-10 w-full animate-fade-in">
           
           {/* Top Status Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/[0.08] bg-[#0c0c0e]/80 backdrop-blur-md text-xs text-[#a1a1aa] mb-7">
+          <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs mb-7 transition-colors ${
+            theme === 'light'
+              ? 'border-slate-200 bg-slate-100 text-slate-600'
+              : 'border-white/[0.08] bg-[#0c0c0e]/80 backdrop-blur-md text-[#a1a1aa]'
+          }`}>
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -175,12 +181,12 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-bold text-white tracking-tight leading-[1.08] text-center max-w-4xl mx-auto select-none font-sans">
-            The workspace that thinks<br />before you even write.
+          <h1 className={`text-4xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tight leading-[1.08] text-center max-w-4xl mx-auto select-none font-sans transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+            The workspace that thinks<br className="hidden sm:inline" />before you even write.
           </h1>
 
           {/* Centered Gray Description */}
-          <p className="max-w-[44rem] mx-auto text-[#8e8e93] text-sm sm:text-base md:text-lg leading-relaxed text-center mt-6 px-4 font-normal">
+          <p className={`max-w-[44rem] mx-auto text-sm sm:text-base md:text-lg leading-relaxed text-center mt-6 px-4 font-normal transition-colors ${theme === 'light' ? 'text-slate-500' : 'text-[#8e8e93]'}`}>
             DocuFlow is a premium workspace for unified document management — complete with secure real-time collaboration, 256K context support, and automatic version synchronization in a single simplified architecture.
           </p>
 
@@ -189,7 +195,11 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
             {/* Primary Button */}
             <button
               onClick={() => onNewDoc()}
-              className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-100 text-black font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl shadow-white/5 min-h-[44px]"
+              className={`w-full sm:w-auto px-6 py-3.5 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl min-h-[44px] ${
+                theme === 'light'
+                  ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/10'
+                  : 'bg-white hover:bg-slate-100 text-black shadow-white/5'
+              }`}
             >
               <span>Start Writing</span>
               <span className="text-base font-normal leading-none mb-0.5">→</span>
@@ -203,7 +213,11 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                   element.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="w-full sm:w-auto px-6 py-3.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-slate-300 hover:text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm min-h-[44px]"
+              className={`w-full sm:w-auto px-6 py-3.5 border font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm min-h-[44px] ${
+                theme === 'light'
+                  ? 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-900'
+                  : 'bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-slate-300 hover:text-white'
+              }`}
             >
               <span>View Documents</span>
             </button>
@@ -211,11 +225,15 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
 
           {/* Statistics Panel */}
           <div className="w-full max-w-4xl mt-20 sm:mt-28 px-4">
-            <div className="rounded-[24px] border border-white/[0.06] bg-[#070709] p-6 sm:py-8 sm:px-10 grid grid-cols-2 md:grid-cols-4 gap-6 relative overflow-hidden">
+            <div className={`rounded-[24px] border p-6 sm:py-8 sm:px-10 grid grid-cols-2 md:grid-cols-4 gap-6 relative overflow-hidden transition-colors ${
+              theme === 'light'
+                ? 'border-slate-200 bg-white shadow-xs'
+                : 'border-white/[0.06] bg-[#070709]'
+            }`}>
               
               {/* Statistic Column 1 */}
               <div className="flex flex-col items-center justify-center text-center">
-                <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold text-white tracking-tight">
+                <span className={`text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
                   {documents.length || "12"}
                 </span>
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
@@ -224,8 +242,8 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               </div>
 
               {/* Statistic Column 2 */}
-              <div className="flex flex-col items-center justify-center text-center border-l border-white/[0.06]">
-                <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold text-white tracking-tight">
+              <div className={`flex flex-col items-center justify-center text-center border-l transition-colors ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.06]'}`}>
+                <span className={`text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
                   {formatWords(totalWords)}
                 </span>
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
@@ -234,8 +252,8 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               </div>
 
               {/* Statistic Column 3 */}
-              <div className="flex flex-col items-center justify-center text-center border-l-0 md:border-l border-white/[0.06]">
-                <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold text-white tracking-tight">
+              <div className={`flex flex-col items-center justify-center text-center border-l-0 md:border-l transition-colors ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.06]'}`}>
+                <span className={`text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
                   100%
                 </span>
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
@@ -244,8 +262,8 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               </div>
 
               {/* Statistic Column 4 */}
-              <div className="flex flex-col items-center justify-center text-center border-l border-white/[0.06]">
-                <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold text-white tracking-tight">
+              <div className={`flex flex-col items-center justify-center text-center border-l transition-colors ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.06]'}`}>
+                <span className={`text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
                   256-bit
                 </span>
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
@@ -263,9 +281,9 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
       <div id="documents-list-section" className="space-y-4 sm:space-y-6 pt-6 scroll-mt-6">
         
         {/* Page Heading & Controls */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/[0.05] pb-4 sm:pb-6">
+        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-4 sm:pb-6 transition-colors ${theme === 'light' ? 'border-slate-200' : 'border-white/[0.05]'}`}>
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <h2 className={`text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2.5 transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
               <span>
                 {activeTab === 'all' && 'Document Management'}
                 {activeTab === 'recent' && 'Recent Documents'}
@@ -273,11 +291,15 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                 {activeTab === 'trash' && 'Trash & Archive'}
                 {selectedCategory && `Category: ${selectedCategory.toUpperCase()}`}
               </span>
-              <span className="text-[10px] sm:text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider border border-blue-500/20">
+              <span className={`text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
+                theme === 'light'
+                  ? 'text-blue-600 bg-blue-50 border-blue-200'
+                  : 'text-blue-400 bg-blue-500/10 border-blue-500/20'
+              }`}>
                 {sortedDocs.length}
               </span>
             </h2>
-            <p className="text-slate-400 text-xs sm:text-sm mt-1 line-clamp-1">
+            <p className={`text-xs sm:text-sm mt-1 line-clamp-1 transition-colors ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
               Access, edit, and collaborate on your documents with instant cloud sync.
             </p>
           </div>
@@ -300,25 +322,35 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
             )}
 
             {/* Sort Selector */}
-            <div className="flex items-center gap-1.5 sm:gap-2 bg-white/[0.02] border border-white/10 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium text-slate-300">
+            <div className={`flex items-center gap-1.5 sm:gap-2 border px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${
+              theme === 'light'
+                ? 'bg-slate-50 border-slate-200 text-slate-600'
+                : 'bg-white/[0.02] border-white/10 text-slate-300'
+            }`}>
               <ArrowUpDown className="w-3.5 h-3.5 text-slate-500 shrink-0" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer text-xs"
+                className={`bg-transparent font-medium focus:outline-none cursor-pointer text-xs ${
+                  theme === 'light' ? 'text-slate-700' : 'text-slate-200'
+                }`}
               >
-                <option value="updated" className="bg-[#0b0b0d] text-white">Sort: Modified</option>
-                <option value="title" className="bg-[#0b0b0d] text-white">Sort: Title (A-Z)</option>
-                <option value="created" className="bg-[#0b0b0d] text-white">Sort: Created</option>
+                <option value="updated" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Modified</option>
+                <option value="title" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Title (A-Z)</option>
+                <option value="created" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Created</option>
               </select>
             </div>
 
             {/* Toggle Grid/List */}
-            <div className="flex items-center bg-white/[0.02] border border-white/10 p-0.5 rounded-xl">
+            <div className={`flex items-center border p-0.5 rounded-xl transition-colors ${
+              theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.02] border-white/10'
+            }`}>
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  viewMode === 'grid' ? 'bg-white/[0.05] text-white font-semibold' : 'text-slate-500 hover:text-slate-300'
+                  viewMode === 'grid' 
+                    ? theme === 'light' ? 'bg-slate-200 text-slate-800 font-semibold' : 'bg-white/[0.05] text-white font-semibold' 
+                    : 'text-slate-500 hover:text-slate-300'
                 }`}
                 title="Grid View"
               >
@@ -327,7 +359,9 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  viewMode === 'list' ? 'bg-white/[0.05] text-white font-semibold' : 'text-slate-500 hover:text-slate-300'
+                  viewMode === 'list' 
+                    ? theme === 'light' ? 'bg-slate-200 text-slate-800 font-semibold' : 'bg-white/[0.05] text-white font-semibold' 
+                    : 'text-slate-500 hover:text-slate-300'
                 }`}
                 title="List View"
               >
@@ -353,7 +387,9 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
                     isSelected
                       ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20'
-                      : 'bg-white/[0.02] border border-white/5 text-slate-300 hover:bg-white/[0.04]'
+                      : theme === 'light' 
+                        ? 'bg-slate-100 border border-slate-200 text-slate-600 hover:bg-slate-200 hover:text-slate-800' 
+                        : 'bg-white/[0.02] border border-white/5 text-slate-300 hover:bg-white/[0.04]'
                   }`}
                 >
                   {pill.id && <span className={`w-2 h-2 rounded-full ${pill.color} shrink-0`} />}
@@ -366,11 +402,13 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
 
         {/* Document Grid / List */}
         {sortedDocs.length === 0 ? (
-          <div className="py-12 sm:py-16 text-center bg-white/[0.01] rounded-2xl border border-white/[0.04] p-6 sm:p-8">
+          <div className={`py-12 sm:py-16 text-center rounded-2xl border p-6 sm:p-8 transition-colors ${
+            theme === 'light' ? 'bg-slate-50 border-slate-200' : 'bg-white/[0.01] border-white/[0.04]'
+          }`}>
             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
               <FileText className="w-6 h-6 stroke-[1.8]" />
             </div>
-            <h3 className="text-base font-bold text-white">No documents found</h3>
+            <h3 className={`text-base font-bold transition-colors ${theme === 'light' ? 'text-slate-800' : 'text-white'}`}>No documents found</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-6">
               {searchQuery
                 ? `No documents match "${searchQuery}". Try a different keyword.`
@@ -390,13 +428,21 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               <div
                 key={doc.id}
                 onClick={() => onOpenDoc(doc.id)}
-                className="bg-[#0b0b0d]/60 rounded-2xl border border-white/[0.04] shadow-xs hover:bg-[#121215]/80 hover:border-white/[0.08] transition-all flex flex-col justify-between cursor-pointer group"
+                className={`rounded-2xl border shadow-xs transition-all flex flex-col justify-between cursor-pointer group ${
+                  theme === 'light'
+                    ? 'bg-white border-slate-200 hover:bg-slate-50/50 hover:border-slate-300'
+                    : 'bg-[#0b0b0d]/60 border-white/[0.04] hover:bg-[#121215]/80 hover:border-white/[0.08]'
+                }`}
               >
                 {/* Card Header */}
-                <div className="p-4 sm:p-5 border-b border-white/[0.03] bg-white/[0.01] rounded-t-2xl">
+                <div className={`p-4 sm:p-5 border-b rounded-t-2xl transition-colors ${
+                  theme === 'light' ? 'border-slate-100 bg-slate-50/50' : 'border-white/[0.03] bg-white/[0.01]'
+                }`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
-                      <span className="text-2xl p-2 bg-white/[0.02] rounded-xl border border-white/5 group-hover:scale-105 transition-transform shrink-0">
+                      <span className={`text-2xl p-2 rounded-xl border transition-all shrink-0 group-hover:scale-105 ${
+                        theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-white/[0.02] border-white/5'
+                      }`}>
                         {doc.icon || '📄'}
                       </span>
                       <div className="flex-1 min-w-0">
@@ -408,11 +454,15 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                               value={renameTitle}
                               onChange={(e) => setRenameTitle(e.target.value)}
                               onBlur={(e) => handleSaveRename(doc.id, e)}
-                              className="text-sm font-bold text-white border-b-2 border-blue-500 outline-none bg-transparent w-full"
+                              className={`text-sm font-bold border-b-2 border-blue-500 outline-none bg-transparent w-full ${
+                                theme === 'light' ? 'text-slate-800' : 'text-white'
+                              }`}
                             />
                           </form>
                         ) : (
-                          <h3 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors truncate">
+                          <h3 className={`text-sm font-bold transition-colors truncate ${
+                            theme === 'light' ? 'text-slate-800 group-hover:text-blue-600' : 'text-white group-hover:text-blue-400'
+                          }`}>
                             {doc.title || 'Untitled Document'}
                           </h3>
                         )}
@@ -430,7 +480,9 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                         className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                           doc.is_starred
                             ? 'text-amber-500 hover:bg-amber-500/10'
-                            : 'text-slate-500 hover:text-amber-500 hover:bg-white/[0.04]'
+                            : theme === 'light' 
+                              ? 'text-slate-400 hover:text-amber-500 hover:bg-slate-100' 
+                              : 'text-slate-500 hover:text-amber-500 hover:bg-white/[0.04]'
                         }`}
                         title={doc.is_starred ? 'Unstar' : 'Star'}
                       >
@@ -454,16 +506,26 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                             }
                             setMenuOpenDocId(doc.id);
                           }}
-                          className="p-1.5 text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] rounded-lg transition-colors cursor-pointer"
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                            theme === 'light'
+                              ? 'text-slate-400 hover:text-slate-800 hover:bg-slate-100'
+                              : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.04]'
+                          }`}
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
 
                         {menuOpenDocId === doc.id && (
-                          <div className={`absolute right-0 ${menuPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'} w-44 bg-[#0b0b0d] rounded-xl shadow-xl border border-white/[0.05] py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100`}>
+                          <div className={`absolute right-0 ${menuPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'} w-44 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 border ${
+                            theme === 'light'
+                              ? 'bg-white border-slate-200 text-slate-800'
+                              : 'bg-[#0b0b0d] border-white/[0.05] text-slate-200'
+                          }`}>
                             <button
                               onClick={(e) => handleStartRename(doc, e)}
-                              className="w-full text-left px-3.5 py-2 text-xs text-slate-300 hover:bg-white/[0.04] flex items-center gap-2 font-medium cursor-pointer"
+                              className={`w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                                theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
+                              }`}
                             >
                               <Edit3 className="w-3.5 h-3.5 text-slate-400" />
                               Rename Title
@@ -473,7 +535,9 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                                 setMenuOpenDocId(null);
                                 onShareDoc(doc);
                               }}
-                              className="w-full text-left px-3.5 py-2 text-xs text-slate-300 hover:bg-white/[0.04] flex items-center gap-2 font-medium cursor-pointer"
+                              className={`w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                                theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
+                              }`}
                             >
                               <Share2 className="w-3.5 h-3.5 text-slate-400" />
                               Share Link
@@ -483,14 +547,16 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                                 setMenuOpenDocId(null);
                                 onDuplicateDoc(doc);
                               }}
-                              className="w-full text-left px-3.5 py-2 text-xs text-slate-300 hover:bg-white/[0.04] flex items-center gap-2 font-medium cursor-pointer"
+                              className={`w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                                theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
+                              }`}
                             >
                               <Copy className="w-3.5 h-3.5 text-slate-400" />
                               Duplicate Copy
                             </button>
                             {doc.is_archived ? (
                               <>
-                                <div className="border-t border-white/[0.04] my-1" />
+                                <div className={`border-t my-1 ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.04]'}`} />
                                 <button
                                   onClick={() => {
                                     setMenuOpenDocId(null);
@@ -515,7 +581,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                               </>
                             ) : (
                               <>
-                                <div className="border-t border-white/[0.04] my-1" />
+                                <div className={`border-t my-1 ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.04]'}`} />
                                 <button
                                   onClick={() => {
                                     setMenuOpenDocId(null);
@@ -537,15 +603,21 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
 
                 {/* Snippet */}
                 <div className="p-4 sm:p-5">
-                  <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed font-sans">
+                  <p className={`text-xs line-clamp-3 leading-relaxed font-sans transition-colors ${
+                    theme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                  }`}>
                     {doc.content.replace(/<[^>]*>/g, ' ').trim() || 'Empty document...'}
                   </p>
                 </div>
 
                 {/* Card Footer */}
-                <div className="px-4 sm:px-5 py-2.5 sm:py-3 bg-white/[0.01] border-t border-white/[0.03] flex items-center justify-between text-[11px] text-slate-400 rounded-b-2xl">
+                <div className={`px-4 sm:px-5 py-2.5 sm:py-3 border-t flex items-center justify-between text-[11px] rounded-b-2xl transition-colors ${
+                  theme === 'light' 
+                    ? 'bg-slate-50/50 border-slate-100 text-slate-500' 
+                    : 'bg-white/[0.01] border-t border-white/[0.03] text-slate-400'
+                }`}>
                   <div className="flex items-center gap-1.5 sm:gap-2">
-                    <span className="font-semibold text-slate-300">
+                    <span className={`font-semibold transition-colors ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
                       {doc.word_count || 0} words
                     </span>
                     {doc.category && (
@@ -578,11 +650,15 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
           </div>
         ) : (
           /* List View */
-          <div className="bg-[#0b0b0d]/60 rounded-2xl border border-white/[0.04] shadow-xs overflow-hidden">
+          <div className={`rounded-2xl border shadow-xs overflow-hidden transition-colors ${
+            theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#0b0b0d]/60 border-white/[0.04]'
+          }`}>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[500px]">
                 <thead>
-                  <tr className="bg-white/[0.01] border-b border-white/[0.04] text-xs text-slate-400 font-semibold uppercase tracking-wider">
+                  <tr className={`border-b text-xs font-semibold uppercase tracking-wider transition-colors ${
+                    theme === 'light' ? 'bg-slate-50 border-slate-100 text-slate-500' : 'bg-white/[0.01] border-white/[0.04] text-slate-400'
+                  }`}>
                     <th className="py-3 px-4 sm:px-5">Document Title</th>
                     <th className="py-3 px-3 sm:px-4 hidden sm:table-cell">Category</th>
                     <th className="py-3 px-3 sm:px-4 hidden md:table-cell">Access</th>
@@ -591,32 +667,48 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                     <th className="py-3 px-4 sm:px-5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.03] text-xs text-slate-300">
+                <tbody className={`divide-y text-xs transition-colors ${
+                  theme === 'light' ? 'divide-slate-100 text-slate-700' : 'divide-white/[0.03] text-slate-300'
+                }`}>
                   {sortedDocs.map((doc) => (
                     <tr
                       key={doc.id}
                       onClick={() => onOpenDoc(doc.id)}
-                      className="hover:bg-white/[0.01] cursor-pointer transition-colors group"
+                      className={`cursor-pointer transition-colors group ${
+                        theme === 'light' ? 'hover:bg-slate-50/50' : 'hover:bg-white/[0.01]'
+                      }`}
                     >
-                      <td className="py-3.5 px-4 sm:px-5 font-semibold text-white group-hover:text-blue-400">
+                      <td className={`py-3.5 px-4 sm:px-5 font-semibold transition-colors ${
+                        theme === 'light' ? 'text-slate-800 group-hover:text-blue-600' : 'text-white group-hover:text-blue-400'
+                      }`}>
                         <div className="flex items-center gap-2.5">
                           <span className="text-lg">{doc.icon || '📄'}</span>
                           <span className="truncate max-w-[150px] sm:max-w-xs">{doc.title || 'Untitled Document'}</span>
                           {doc.is_starred && <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
                         </div>
                       </td>
-                      <td className="py-3.5 px-3 sm:px-4 hidden sm:table-cell capitalize font-medium text-slate-400">
+                      <td className={`py-3.5 px-3 sm:px-4 hidden sm:table-cell capitalize font-medium transition-colors ${
+                        theme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                      }`}>
                         {doc.category || 'General'}
                       </td>
                       <td className="py-3.5 px-3 sm:px-4 hidden md:table-cell">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight bg-slate-800 text-slate-300 border border-white/[0.05]">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight border transition-colors ${
+                          theme === 'light' 
+                            ? 'bg-slate-100 text-slate-700 border-slate-200' 
+                            : 'bg-slate-800 text-slate-300 border-white/[0.05]'
+                        }`}>
                           {doc.access_level}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3 sm:px-4 hidden lg:table-cell font-mono text-slate-400">
+                      <td className={`py-3.5 px-3 sm:px-4 hidden lg:table-cell font-mono transition-colors ${
+                        theme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                      }`}>
                         {doc.word_count || 0}
                       </td>
-                      <td className="py-3.5 px-3 sm:px-4 text-slate-400 whitespace-nowrap">
+                      <td className={`py-3.5 px-3 sm:px-4 whitespace-nowrap transition-colors ${
+                        theme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                      }`}>
                         {formatDate(doc.updated_at)}
                       </td>
                       <td className="py-3.5 px-4 sm:px-5 text-right" onClick={(e) => e.stopPropagation()}>
@@ -646,14 +738,18 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                             <>
                               <button
                                 onClick={() => onShareDoc(doc)}
-                                className="p-1.5 text-slate-500 hover:text-blue-400 rounded-lg hover:bg-white/[0.02] cursor-pointer"
+                                className={`p-1.5 text-slate-500 hover:text-blue-400 rounded-lg cursor-pointer transition-colors ${
+                                  theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-white/[0.02]'
+                                }`}
                                 title="Share"
                               >
                                 <Share2 className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => onDeleteDoc(doc.id, false)}
-                                className="p-1.5 text-slate-500 hover:text-red-400 rounded-lg hover:bg-white/[0.02] cursor-pointer"
+                                className={`p-1.5 text-slate-500 hover:text-red-400 rounded-lg cursor-pointer transition-colors ${
+                                  theme === 'light' ? 'hover:bg-slate-100' : 'hover:bg-white/[0.02]'
+                                }`}
                                 title="Move to Trash"
                               >
                                 <Trash2 className="w-4 h-4" />

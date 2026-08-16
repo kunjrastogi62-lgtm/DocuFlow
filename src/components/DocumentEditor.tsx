@@ -60,6 +60,7 @@ interface DocumentEditorProps {
   onCreateVersion: (name: string) => void;
   onRestoreVersion: (version: DocumentVersion) => void;
   isSaving?: boolean;
+  theme?: 'light' | 'dark';
 }
 
 export const DocumentEditor: React.FC<DocumentEditorProps> = ({
@@ -74,6 +75,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   onCreateVersion,
   onRestoreVersion,
   isSaving = false,
+  theme = 'dark',
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState(doc.title);
@@ -430,11 +432,11 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
           {/* Version History Toggle */}
           <button
             onClick={() => setActiveTab(activeTab === 'versions' ? 'editor' : 'versions')}
-            className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            className={`p-2 rounded-xl text-xs font-semibold items-center gap-1.5 border transition-all ${
               activeTab === 'versions'
                 ? 'bg-blue-600 text-white border-blue-600'
                 : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
-            }`}
+            } hidden md:flex`}
             title="Version History"
           >
             <History className="w-4 h-4" />
@@ -444,11 +446,11 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
           {/* Comments Panel Toggle */}
           <button
             onClick={() => setActiveTab(activeTab === 'comments' ? 'editor' : 'comments')}
-            className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all relative ${
+            className={`p-2 rounded-xl text-xs font-semibold items-center gap-1.5 border transition-all relative ${
               activeTab === 'comments'
                 ? 'bg-blue-600 text-white border-blue-600'
                 : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200'
-            }`}
+            } hidden md:flex`}
             title="Comments Thread"
           >
             <MessageSquare className="w-4 h-4" />
@@ -463,7 +465,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
           {/* Share Modal Trigger */}
           <button
             onClick={() => setIsShareModalOpen(true)}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-all"
+            className="items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-all hidden md:flex"
             title="Share Document"
           >
             <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -489,6 +491,38 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                 </div>
 
                 <div className="py-1">
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      setIsShareModalOpen(true);
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium md:hidden"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-blue-600" />
+                    Share Document
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      setActiveTab(activeTab === 'comments' ? 'editor' : 'comments');
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium md:hidden"
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
+                    Comments ({comments.length})
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileFileMenu(false);
+                      setActiveTab(activeTab === 'versions' ? 'editor' : 'versions');
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 flex items-center gap-2 text-slate-700 font-medium md:hidden"
+                  >
+                    <History className="w-3.5 h-3.5 text-amber-600" />
+                    Version History ({versions.length})
+                  </button>
+                  <div className="border-b border-slate-100 my-1 md:hidden" />
+
                   <button
                     onClick={() => {
                       setShowMobileFileMenu(false);
@@ -703,40 +737,47 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
       <div className="flex-1 flex overflow-hidden relative">
         {/* Outline Table of Contents Sidebar */}
         {showOutline && (
-          <aside className="w-56 shrink-0 bg-white border-r border-slate-200/80 p-4 overflow-y-auto z-10">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-blue-600" />
-                Outline
-              </h4>
-              <button
-                onClick={() => setShowOutline(false)}
-                className="text-slate-400 hover:text-slate-600 p-0.5"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            {headings.length === 0 ? (
-              <p className="text-xs text-slate-400 italic">Add headings (H1, H2, H3) to see document outline.</p>
-            ) : (
-              <div className="space-y-1.5 text-xs">
-                {headings.map((h) => (
-                  <a
-                    key={h.id}
-                    href={`#${h.id}`}
-                    onClick={() => {
-                      if (window.innerWidth < 768) setShowOutline(false);
-                    }}
-                    className={`block truncate text-slate-600 hover:text-blue-600 transition-colors ${
-                      h.level === 1 ? 'font-bold' : h.level === 2 ? 'pl-2 font-medium' : 'pl-4 text-slate-400'
-                    }`}
-                  >
-                    {h.text}
-                  </a>
-                ))}
+          <>
+            {/* Mobile backdrop for outline */}
+            <div 
+              className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs z-30 md:hidden"
+              onClick={() => setShowOutline(false)}
+            />
+            <aside className="fixed inset-y-16 left-0 w-64 bg-white border-r border-slate-200 p-4 overflow-y-auto z-40 md:relative md:inset-auto md:w-56 md:shrink-0 md:border-r md:border-slate-200/80 md:shadow-none shadow-2xl h-[calc(100vh-64px)] md:h-full">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+                  Outline
+                </h4>
+                <button
+                  onClick={() => setShowOutline(false)}
+                  className="text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
-            )}
-          </aside>
+              {headings.length === 0 ? (
+                <p className="text-xs text-slate-400 italic">Add headings (H1, H2, H3) to see document outline.</p>
+              ) : (
+                <div className="space-y-1.5 text-xs">
+                  {headings.map((h) => (
+                    <a
+                      key={h.id}
+                      href={`#${h.id}`}
+                      onClick={() => {
+                        if (window.innerWidth < 768) setShowOutline(false);
+                      }}
+                      className={`block truncate text-slate-600 hover:text-blue-600 transition-colors ${
+                        h.level === 1 ? 'font-bold' : h.level === 2 ? 'pl-2 font-medium' : 'pl-4 text-slate-400'
+                      }`}
+                    >
+                      {h.text}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </aside>
+          </>
         )}
 
         {/* Editor Page Canvas Area */}

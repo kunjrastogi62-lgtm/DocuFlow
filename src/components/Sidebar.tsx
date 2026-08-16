@@ -28,6 +28,7 @@ interface SidebarProps {
   };
   isOpenOnMobile?: boolean;
   onCloseMobile?: () => void;
+  theme?: 'light' | 'dark';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -39,6 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   docCounts,
   isOpenOnMobile = false,
   onCloseMobile,
+  theme = 'dark',
 }) => {
   const mainNavs = [
     { id: 'all' as ViewTab, label: 'All Documents', icon: FileText, count: docCounts.all },
@@ -55,18 +57,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col justify-between h-full">
+    <div className="flex flex-col justify-between h-full overflow-y-auto">
       <div className="space-y-5">
         {/* Mobile Header with Close Button */}
-        <div className="md:hidden flex items-center justify-between p-4 border-b border-white/[0.05]">
+        <div className={`md:hidden flex items-center justify-between p-4 border-b ${theme === 'light' ? 'border-slate-200 bg-white' : 'border-white/[0.05]'}`}>
           <div className="flex items-center gap-2.5">
             <img src="/logo.svg" alt="DocuFlow" className="w-7 h-7 object-contain" />
-            <span className="text-white font-bold text-base">DocuFlow Navigation</span>
+            <span className={`font-bold text-base ${theme === 'light' ? 'text-slate-800' : 'text-white'}`}>DocuFlow Navigation</span>
           </div>
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className={`p-1.5 rounded-lg text-slate-400 transition-colors ${theme === 'light' ? 'hover:text-slate-800 hover:bg-slate-100' : 'hover:text-white hover:bg-slate-800'}`}
             >
               <X className="w-5 h-5" />
             </button>
@@ -109,17 +111,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
-                      : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
+                      ? theme === 'light' ? 'bg-blue-50 text-blue-600 border border-blue-200 font-semibold' : 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : theme === 'light' ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-500'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-slate-400'}`} />
                     <span>{nav.label}</span>
                   </div>
                   {nav.count !== null && nav.count > 0 && (
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      isActive ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-800 text-slate-400'
+                      isActive 
+                        ? theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/20 text-blue-300' 
+                        : theme === 'light' ? 'bg-slate-200 text-slate-600' : 'bg-slate-800 text-slate-400'
                     }`}>
                       {nav.count}
                     </span>
@@ -145,17 +149,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
-                      : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
+                      ? theme === 'light' ? 'bg-blue-50 text-blue-600 border border-blue-200 font-semibold' : 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : theme === 'light' ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-500'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-slate-400'}`} />
                     <span>{nav.label}</span>
                   </div>
                   {nav.count !== null && nav.count > 0 && (
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      isActive ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-800 text-slate-400'
+                      isActive 
+                        ? theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-500/20 text-blue-300' 
+                        : theme === 'light' ? 'bg-slate-200 text-slate-600' : 'bg-slate-800 text-slate-400'
                     }`}>
                       {nav.count}
                     </span>
@@ -167,7 +173,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Categories */}
-        <div className="px-3 space-y-1 pt-3 border-t border-white/[0.05] text-sm">
+        <div className={`px-3 space-y-1 pt-3 border-t text-sm ${theme === 'light' ? 'border-slate-200' : 'border-white/[0.05]'}`}>
           <div className="flex items-center justify-between px-3 pb-1.5">
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Categories
@@ -196,8 +202,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer ${
                   isCatActive
-                    ? 'bg-slate-800 text-white font-semibold border border-slate-700'
-                    : 'text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
+                    ? theme === 'light' ? 'bg-slate-200 text-slate-900 font-semibold border border-slate-300' : 'bg-slate-800 text-white font-semibold border border-slate-700'
+                    : theme === 'light' ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' : 'text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -216,15 +222,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="p-4 border-t border-white/[0.05] mt-auto">
-        <div className="flex items-center gap-3 p-2 bg-[#0b0b0d] rounded-xl border border-white/[0.04]">
+      <div className={`p-4 border-t mt-auto ${theme === 'light' ? 'border-slate-200' : 'border-white/[0.05]'}`}>
+        <div className={`flex items-center gap-3 p-2 rounded-xl border ${theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-[#0b0b0d] border-white/[0.04]'}`}>
           <img 
             src="/logo.svg" 
             alt="DocuFlow Logo" 
             className="w-8 h-8 object-contain"
           />
           <div>
-            <p className="text-white text-xs font-semibold flex items-center gap-1.5">
+            <p className={`text-xs font-semibold flex items-center gap-1.5 ${theme === 'light' ? 'text-slate-800' : 'text-white'}`}>
               <span>DocuFlow Cloud</span>
               <span className="px-1.5 py-0.2 bg-blue-600/30 text-blue-300 rounded text-[9px] font-mono">PRO</span>
             </p>
@@ -238,7 +244,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <aside className="w-64 shrink-0 bg-[#050505]/95 flex-col justify-between hidden md:flex text-slate-400 min-h-[calc(100vh-64px)] border-r border-white/[0.04]">
+      <aside className={`w-64 shrink-0 flex-col justify-between hidden md:flex min-h-[calc(100vh-64px)] border-r transition-colors duration-300 ${theme === 'light' ? 'bg-[#f8fafc]/95 text-slate-700 border-slate-200' : 'bg-[#050505]/95 text-slate-400 border-white/[0.04]'}`}>
         {sidebarContent}
       </aside>
 
@@ -247,12 +253,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="fixed inset-0 z-50 md:hidden flex">
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
             onClick={onCloseMobile}
           />
 
           {/* Drawer Canvas */}
-          <div className="relative w-4/5 max-w-xs bg-[#050505] text-slate-400 h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200 border-r border-white/[0.04]">
+          <div className={`relative w-4/5 max-w-xs h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200 border-r transition-colors ${theme === 'light' ? 'bg-slate-50 text-slate-700 border-slate-200' : 'bg-[#050505] text-slate-400 border-white/[0.04]'}`}>
             {sidebarContent}
           </div>
         </div>

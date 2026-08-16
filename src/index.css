@@ -1,8 +1,25 @@
 @import "tailwindcss";
 
+/* Critical viewport overflow-x rules */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 /* Custom Editor Styling */
 [contenteditable] {
   outline: none !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
 }
 
 [contenteditable] pre {
@@ -58,10 +75,13 @@
 }
 
 [contenteditable] table {
+  display: block !important;
   width: 100% !important;
+  overflow-x: auto !important;
   border-collapse: collapse !important;
   margin: 16px 0 !important;
   font-size: 14px !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 [contenteditable] th {
@@ -77,6 +97,13 @@
   border: 1px solid #cbd5e1 !important;
   padding: 10px 12px !important;
   color: #475569 !important;
+}
+
+[contenteditable] img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 12px !important;
+  margin: 16px 0 !important;
 }
 
 [contenteditable] ul {
@@ -168,8 +195,18 @@
   -webkit-backdrop-filter: blur(24px);
 }
 
+.glass-panel.theme-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
 .dark-tech-gradient {
   background: #050505;
+}
+
+.dark-tech-gradient.theme-light {
+  background: #f8fafc;
 }
 
 /* Premium Dark Grid Background */
@@ -182,15 +219,35 @@
   background-size: 100% 100%, 40px 40px, 40px 40px;
 }
 
+.bg-grid-pattern.theme-light {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 50% 40%, rgba(59, 130, 246, 0.05) 0%, rgba(248, 250, 252, 0) 70%),
+    linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+}
+
 /* Dark theme specific overrides */
 .dark-card {
   background-color: #0b0b0d;
   border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
+.dark-card.theme-light {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
 .dark-card:hover {
   background-color: #0f0f12;
   border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark-card.theme-light:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 /* Smooth transitions */

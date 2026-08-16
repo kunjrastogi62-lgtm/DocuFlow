@@ -30,7 +30,7 @@ export const CommentsPanel: React.FC<CommentsPanelProps> = ({
   const filteredComments = comments.filter((c) => showResolved ? true : !c.resolved);
 
   return (
-    <aside className="w-80 shrink-0 bg-white border-l border-slate-200/80 p-4 flex flex-col justify-between h-full shadow-lg z-20">
+    <aside className="w-full h-full bg-white border-l border-slate-200/80 p-4 flex flex-col justify-between shadow-lg z-20">
       <div>
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">

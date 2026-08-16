@@ -51,6 +51,19 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [dbHealth, setDbHealth] = useState<DatabaseHealth | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  
+  // Theme state with localStorage persistence
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('docuflow_theme') as 'light' | 'dark') || 'dark';
+  });
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  useEffect(() => {
+    localStorage.setItem('docuflow_theme', theme);
+  }, [theme]);
 
   // Document specific state
   const [comments, setComments] = useState<DocumentComment[]>([]);
@@ -393,14 +406,16 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-[100dvh] md:min-h-screen bg-grid-pattern text-slate-100 flex flex-col font-sans relative md:overflow-hidden">
+    <div className={`min-h-[100dvh] md:min-h-screen bg-grid-pattern ${theme === 'light' ? 'theme-light text-slate-800' : 'text-slate-100'} flex flex-col font-sans relative md:overflow-hidden transition-all duration-300`}>
       {/* Subtle Premium Spotlights */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[25%] right-[25%] w-[50%] h-[60%] rounded-full bg-blue-900/10 blur-[150px] opacity-40" />
-      </div>
+      {theme === 'dark' && (
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-10%] left-[25%] right-[25%] w-[50%] h-[60%] rounded-full bg-blue-900/10 blur-[150px] opacity-40" />
+        </div>
+      )}
       
       {/* Central Glassmorphism App Wrapper */}
-      <div className="relative z-10 flex-1 flex flex-col w-full md:h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x lg:border-white/[0.03] lg:shadow-2xl glass-panel md:overflow-hidden transition-all duration-500">
+      <div className={`relative z-10 flex-1 flex flex-col w-full md:h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x ${theme === 'light' ? 'lg:border-slate-200 lg:shadow-xl' : 'lg:border-white/[0.03] lg:shadow-2xl'} glass-panel ${theme === 'light' ? 'theme-light' : ''} md:overflow-hidden transition-all duration-500`}>
         {/* If in Editor mode, display full editor */}
       {activeDocId && activeDoc ? (
         <div className="z-10 flex-1 flex flex-col overflow-hidden">
@@ -424,6 +439,7 @@ export default function App() {
             onCreateVersion={handleCreateVersion}
             onRestoreVersion={handleRestoreVersion}
             isSaving={isSaving}
+            theme={theme}
           />
         </div>
       ) : (
@@ -443,6 +459,8 @@ export default function App() {
               setActiveTab('all');
               setSelectedCategory(null);
             }}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
 
           <div className="flex-1 flex md:overflow-hidden">
@@ -461,6 +479,7 @@ export default function App() {
               docCounts={docCounts}
               isOpenOnMobile={isMobileSidebarOpen}
               onCloseMobile={() => setIsMobileSidebarOpen(false)}
+              theme={theme}
             />
 
             
@@ -478,6 +497,7 @@ export default function App() {
                 onDuplicateDoc={handleDuplicateDocument}
                 onRenameDoc={handleRenameDocument}
                 onSelectCategory={setSelectedCategory}
+                theme={theme}
               />
           </div>
 
@@ -491,7 +511,7 @@ export default function App() {
           </button>
 
           {/* Mobile Bottom Navigation Bar (Visible on mobile screens) */}
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2 flex items-center justify-around shadow-lg">
+          <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-40 backdrop-blur-md border-t px-3 py-2 flex items-center justify-around shadow-lg transition-colors ${theme === 'light' ? 'bg-white/95 border-slate-200 text-slate-500' : 'bg-[#0c0c0e]/95 border-white/[0.05] text-slate-400'}`}>
             <button
               onClick={() => {
                 setSelectedCategory(null);
@@ -500,13 +520,13 @@ export default function App() {
               className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-semibold transition-all relative ${
                 activeTab === 'all' && selectedCategory === null
                   ? 'text-blue-600 font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
+                  : theme === 'light' ? 'text-slate-500 hover:text-slate-800' : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               <FileText className="w-5 h-5" />
               <span>All Docs</span>
               {docCounts.all > 0 && (
-                <span className="absolute 1 top-0.5 right-1.5 w-4 h-4 rounded-full bg-blue-100 text-blue-700 text-[9px] font-bold flex items-center justify-center">
+                <span className={`absolute top-0.5 right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center ${theme === 'light' ? 'bg-blue-100 text-blue-700' : 'bg-blue-950 text-blue-300'}`}>
                   {docCounts.all}
                 </span>
               )}
@@ -520,13 +540,13 @@ export default function App() {
               className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-semibold transition-all relative ${
                 activeTab === 'starred'
                   ? 'text-amber-600 font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
+                  : theme === 'light' ? 'text-slate-500 hover:text-slate-800' : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               <Star className="w-5 h-5" />
               <span>Starred</span>
               {docCounts.starred > 0 && (
-                <span className="absolute top-0.5 right-1.5 w-4 h-4 rounded-full bg-amber-100 text-amber-700 text-[9px] font-bold flex items-center justify-center">
+                <span className={`absolute top-0.5 right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center ${theme === 'light' ? 'bg-amber-100 text-amber-700' : 'bg-amber-950 text-amber-300'}`}>
                   {docCounts.starred}
                 </span>
               )}
@@ -549,7 +569,7 @@ export default function App() {
               className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-semibold transition-all ${
                 activeTab === 'recent'
                   ? 'text-blue-600 font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
+                  : theme === 'light' ? 'text-slate-500 hover:text-slate-800' : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               <Clock className="w-5 h-5" />
@@ -564,13 +584,13 @@ export default function App() {
               className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl text-[11px] font-semibold transition-all relative ${
                 activeTab === 'trash'
                   ? 'text-red-600 font-bold'
-                  : 'text-slate-500 hover:text-slate-800'
+                  : theme === 'light' ? 'text-slate-500 hover:text-slate-800' : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               <Trash2 className="w-5 h-5" />
               <span>Trash</span>
               {docCounts.trash > 0 && (
-                <span className="absolute top-0.5 right-1.5 w-4 h-4 rounded-full bg-red-100 text-red-700 text-[9px] font-bold flex items-center justify-center">
+                <span className={`absolute top-0.5 right-1.5 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center ${theme === 'light' ? 'bg-red-100 text-red-700' : 'bg-red-950 text-red-300'}`}>
                   {docCounts.trash}
                 </span>
               )}
@@ -578,7 +598,7 @@ export default function App() {
           </nav>
 
           {/* Footer Branding on Desktop */}
-          <footer className="hidden md:flex h-11 border-t border-slate-200 bg-white items-center px-8 text-[11px] text-slate-400 justify-between shrink-0">
+          <footer className={`hidden md:flex h-11 border-t items-center px-8 text-[11px] justify-between shrink-0 transition-colors ${theme === 'light' ? 'border-slate-200 bg-white text-slate-400' : 'border-white/[0.04] bg-[#0c0c0e] text-slate-500'}`}>
             <span>© 2026 DocuFlow • Professional Cloud Document Editor</span>
             <span className="font-mono">v2.4.1-stable</span>
           </footer>

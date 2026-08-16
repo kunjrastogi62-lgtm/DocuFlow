@@ -79,7 +79,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
               General Access
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
                 onClick={() => onUpdateAccess('private')}
                 className={`p-3 rounded-2xl border text-left flex items-start gap-2.5 transition-all ${
@@ -148,7 +148,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
               Invite Collaborator by Email
             </label>
-            <form onSubmit={handleAddCollaborator} className="flex items-center gap-2">
+            <form onSubmit={handleAddCollaborator} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <div className="relative flex-1">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -163,7 +163,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <select
                 value={invitePermission}
                 onChange={(e) => setInvitePermission(e.target.value as any)}
-                className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-700 outline-hidden cursor-pointer"
+                className="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-medium text-slate-700 outline-hidden cursor-pointer"
               >
                 <option value="edit">Can Edit</option>
                 <option value="comment">Can Comment</option>
@@ -172,7 +172,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
               <button
                 type="submit"
-                className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl transition-colors shrink-0"
+                className="w-full sm:w-auto px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl transition-colors shrink-0"
               >
                 Invite
               </button>
