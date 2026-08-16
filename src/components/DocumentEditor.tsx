@@ -52,6 +52,7 @@ interface DocumentEditorProps {
   doc: DocuFlowDocument;
   onGoBack: () => void;
   onUpdateDocument: (docId: string, updates: Partial<DocuFlowDocument>) => void;
+  onSaveDocument: (docId: string, title: string, content: string) => Promise<boolean>;
   comments: DocumentComment[];
   onAddComment: (text: string, highlightedText?: string) => void;
   onResolveComment: (commentId: string, resolved: boolean) => void;
@@ -65,6 +66,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   doc,
   onGoBack,
   onUpdateDocument,
+  onSaveDocument,
   comments,
   onAddComment,
   onResolveComment,
@@ -75,6 +77,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState(doc.title);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'comments' | 'versions'>('editor');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedText, setSelectedText] = useState<string>('');
@@ -91,11 +94,39 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   const [justSaved, setJustSaved] = useState(false);
   const [showMobileFileMenu, setShowMobileFileMenu] = useState(false);
 
-  const handleManualSave = () => {
+  // Leave warning when browser tab closed/refreshed
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = ''; // Standard browser dialog
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // Handle go back with confirmation prompt
+  const handleGoBack = () => {
+    if (hasUnsavedChanges) {
+      const confirmLeave = window.confirm(
+        'You have unsaved changes. Are you sure you want to leave without saving?'
+      );
+      if (!confirmLeave) return;
+    }
+    onGoBack();
+  };
+
+  const handleManualSave = async () => {
     const currentContent = showSourceCode ? sourceHtml : (editorRef.current?.innerHTML || doc.content);
-    onUpdateDocument(doc.id, { content: currentContent, title });
-    setJustSaved(true);
-    setTimeout(() => setJustSaved(false), 2000);
+    const success = await onSaveDocument(doc.id, title, currentContent);
+    if (success) {
+      setHasUnsavedChanges(false);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2000);
+    }
   };
 
   // Update editor innerHTML when doc changes
@@ -105,18 +136,21 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
       updateHeadingsOutline();
     }
     setTitle(doc.title);
+    setHasUnsavedChanges(false);
   }, [doc.id]);
 
-  // Handle title auto-save
+  // Handle title edit locally in state and update parent memory
   const handleTitleChange = (newTitle: string) => {
     setTitle(newTitle);
+    setHasUnsavedChanges(true);
     onUpdateDocument(doc.id, { title: newTitle });
   };
 
-  // Content input handler with debounce
+  // Content input handler locally in state and update parent memory
   const handleEditorInput = () => {
     if (editorRef.current) {
       const html = editorRef.current.innerHTML;
+      setHasUnsavedChanges(true);
       onUpdateDocument(doc.id, { content: html });
       updateHeadingsOutline();
     }
@@ -131,6 +165,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
     } else {
       // Exiting Source Mode: apply sourceHtml to document
       setShowSourceCode(false);
+      setHasUnsavedChanges(true);
       onUpdateDocument(doc.id, { content: sourceHtml });
       setTimeout(() => {
         if (editorRef.current) {
@@ -138,6 +173,16 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
           updateHeadingsOutline();
         }
       }, 50);
+    }
+  };
+
+  // Wrapper for version restoration to update local editor state and set unsaved changes
+  const handleRestoreVersionWrapper = (version: DocumentVersion) => {
+    onRestoreVersion(version);
+    setHasUnsavedChanges(true);
+    if (editorRef.current) {
+      editorRef.current.innerHTML = version.content;
+      updateHeadingsOutline();
     }
   };
 
@@ -296,7 +341,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
         {/* Left: Back button & Title input */}
         <div className="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0">
           <button
-            onClick={onGoBack}
+            onClick={handleGoBack}
             className="p-1.5 sm:p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors shrink-0"
             title="Back to Dashboard"
           >
@@ -362,12 +407,17 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
             <span className="hidden sm:inline">{justSaved ? 'Saved!' : 'Save'}</span>
           </button>
 
-          {/* Auto-save Status on Desktop */}
+          {/* Save Status on Desktop */}
           <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-50 rounded-xl text-xs font-medium border border-slate-200 text-slate-600">
             {isSaving ? (
               <span className="flex items-center gap-1.5 text-amber-600">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 <span>Saving...</span>
+              </span>
+            ) : hasUnsavedChanges ? (
+              <span className="flex items-center gap-1.5 text-amber-600 font-medium">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span>Unsaved changes</span>
               </span>
             ) : (
               <span className="flex items-center gap-1.5 text-emerald-700 font-medium">
@@ -760,7 +810,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
               <VersionHistoryPanel
                 versions={versions}
                 onCreateVersion={onCreateVersion}
-                onRestoreVersion={onRestoreVersion}
+                onRestoreVersion={handleRestoreVersionWrapper}
                 onClose={() => setActiveTab('editor')}
               />
             </div>

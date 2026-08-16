@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   fetchDocuments, 
-  createDocument, 
-  updateDocumentInSupabase, 
+  saveDocument, 
   deleteDocument, 
   restoreDocument, 
   getCurrentUser, 
@@ -150,7 +149,7 @@ export default function App() {
     }
   }, [activeDocId]);
 
-  // Create new document
+  // Create new document (In-Memory Only, nothing saved yet!)
   const handleCreateNewDocument = (
     title = 'Untitled Document',
     content = '<p>Welcome to <strong>DocuFlow</strong>. Start typing here...</p>',
@@ -164,7 +163,6 @@ export default function App() {
     const userId = user?.id || 'guest';
     const userEmail = user?.email || 'guest@docuflow.app';
 
-    const { wordCount, charCount } = calculateCounts(content);
     const newDoc: DocuFlowDocument = {
       id: crypto.randomUUID(),
       title,
@@ -176,42 +174,80 @@ export default function App() {
       icon,
       category,
       access_level: 'private',
-      word_count: wordCount,
-      char_count: charCount,
+      word_count: 0,
+      char_count: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    // Immediately show new document editor
-    setDocuments((prev) => [newDoc, ...prev]);
-    setActiveDocId(newDoc.id);
+    // Mark as a brand-new unsaved document
+    const newDocWithFlag = { ...newDoc, isNewUnsaved: true } as any;
 
-    // Persist in background
-    createDocument(userId, userEmail, title, content, category, icon, newDoc);
+    // Immediately show new document editor
+    setDocuments((prev) => [newDocWithFlag, ...prev]);
+    setActiveDocId(newDocWithFlag.id);
   };
 
-  // Update Document with Debounced auto-save
-  const handleUpdateDocument = useCallback(async (docId: string, updates: Partial<DocuFlowDocument>) => {
-    setIsSaving(true);
-    
-    // Optimistic state update
+  // Update Document state locally in React memory (no DB write)
+  const handleUpdateDocument = useCallback((docId: string, updates: Partial<DocuFlowDocument>) => {
     setDocuments((prev) =>
       prev.map((d) => (d.id === docId ? { ...d, ...updates, updated_at: new Date().toISOString() } : d))
     );
-
-    await updateDocumentInSupabase(docId, updates);
-    
-    setTimeout(() => {
-      setIsSaving(false);
-    }, 400);
   }, []);
 
-  // Toggle Star
-  const handleToggleStar = async (docId: string, currentStarred: boolean) => {
-    handleUpdateDocument(docId, { is_starred: !currentStarred });
+  // Permanent Document Save Function (ONE authoritative pathway for editor clicks)
+  const handleSaveDocument = async (docId: string, title: string, content: string): Promise<boolean> => {
+    console.log("handleSaveDocument called", { docId, title });
+    setIsSaving(true);
+    
+    // Find the current document in state
+    const doc = documents.find((d) => d.id === docId);
+    if (!doc) {
+      console.error("Document save failed: Document not found in local state");
+      setIsSaving(false);
+      return false;
+    }
+
+    const isNew = !!(doc as any).isNewUnsaved;
+
+    // Call the single, authoritative saveDocument function
+    const { data, error } = await saveDocument({ ...doc, title, content }, isNew);
+
+    if (error) {
+      console.error("Document save failed:", error);
+      alert(`Failed to save document. Please try again. Error: ${error.message || error}`);
+      setIsSaving(false);
+      return false;
+    }
+
+    if (data) {
+      // Update our local React state with the returned database record and remove isNewUnsaved flag
+      setDocuments((prev) =>
+        prev.map((d) => (d.id === docId ? { ...data, isNewUnsaved: false } as any : d))
+      );
+      setIsSaving(false);
+      return true;
+    }
+
+    setIsSaving(false);
+    return false;
   };
 
-  // Delete document
+  // Toggle Star (from dashboard: writes to DB immediately)
+  const handleToggleStar = async (docId: string, currentStarred: boolean) => {
+    const nextStarred = !currentStarred;
+    handleUpdateDocument(docId, { is_starred: nextStarred });
+
+    const doc = documents.find((d) => d.id === docId);
+    if (doc && !(doc as any).isNewUnsaved && doc.user_id !== 'guest') {
+      const { error } = await saveDocument({ ...doc, is_starred: nextStarred }, false);
+      if (error) {
+        console.error("Failed to update star on server:", error);
+      }
+    }
+  };
+
+  // Delete/Archive document (writes to DB immediately)
   const handleDeleteDocument = async (docId: string, hardDelete = false) => {
     await deleteDocument(docId, hardDelete);
     if (hardDelete) {
@@ -224,30 +260,61 @@ export default function App() {
     }
   };
 
-  // Restore document
+  // Restore document (writes to DB immediately)
   const handleRestoreDocument = async (docId: string) => {
     await restoreDocument(docId);
     setDocuments((prev) => prev.map((d) => (d.id === docId ? { ...d, is_archived: false } : d)));
   };
 
-  // Duplicate document
+  // Duplicate document (writes to DB immediately)
   const handleDuplicateDocument = async (doc: DocuFlowDocument) => {
-    const userId = user?.id || 'guest';
-    const userEmail = user?.email || 'guest@docuflow.app';
-    const dupDoc = await createDocument(
-      userId,
-      userEmail,
-      `${doc.title} (Copy)`,
-      doc.content,
-      doc.category,
-      doc.icon
-    );
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      alert("Please sign in to duplicate documents.");
+      return;
+    }
+
+    const { wordCount, charCount } = calculateCounts(doc.content);
+    const dupDoc: DocuFlowDocument = {
+      id: crypto.randomUUID(),
+      title: `${doc.title} (Copy)`,
+      content: doc.content,
+      user_id: user.id,
+      user_email: user.email || '',
+      is_starred: false,
+      is_archived: false,
+      icon: doc.icon || '📄',
+      category: doc.category || 'general',
+      access_level: 'private',
+      word_count: wordCount,
+      char_count: charCount,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
     setDocuments((prev) => [dupDoc, ...prev]);
+
+    const { data, error } = await saveDocument(dupDoc, true);
+    if (error) {
+      console.error("Duplicate document save failed:", error);
+      alert("Failed to duplicate document on server.");
+      setDocuments((prev) => prev.filter((d) => d.id !== dupDoc.id));
+    } else if (data) {
+      setDocuments((prev) => prev.map((d) => (d.id === dupDoc.id ? data : d)));
+    }
   };
 
-  // Rename document title
+  // Rename document title (from dashboard: writes to DB immediately)
   const handleRenameDocument = async (docId: string, newTitle: string) => {
     handleUpdateDocument(docId, { title: newTitle });
+
+    const doc = documents.find((d) => d.id === docId);
+    if (doc && !(doc as any).isNewUnsaved && doc.user_id !== 'guest') {
+      const { error } = await saveDocument({ ...doc, title: newTitle }, false);
+      if (error) {
+        console.error("Failed to rename document on server:", error);
+      }
+    }
   };
 
   // Comment Handlers
@@ -343,6 +410,8 @@ export default function App() {
           <DocumentEditor
             doc={activeDoc}
             onGoBack={() => {
+              // Filter out any brand-new unsaved documents when going back
+              setDocuments((prev) => prev.filter((d) => !(d as any).isNewUnsaved));
               setActiveDocId(null);
               // clear URL params if any
               if (window.location.search) {
@@ -350,6 +419,7 @@ export default function App() {
               }
             }}
             onUpdateDocument={handleUpdateDocument}
+            onSaveDocument={handleSaveDocument}
             comments={comments}
             onAddComment={handleAddComment}
             onResolveComment={handleResolveComment}

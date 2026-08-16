@@ -205,103 +205,78 @@ export async function fetchDocumentById(docId: string): Promise<DocuFlowDocument
   return local.find(d => d.id === docId) || null;
 }
 
-// Create new document
-export async function createDocument(
-  userId: string,
-  userEmail: string,
-  initialTitle = 'Untitled Document',
-  initialContent = '<p>Welcome to <strong>DocuFlow</strong>. Start editing your cloud document now!</p>',
-  category: DocuFlowDocument['category'] = 'general',
-  icon = '📄',
-  existingDoc?: DocuFlowDocument
-): Promise<DocuFlowDocument> {
-  const { wordCount, charCount } = calculateCounts(initialContent);
+// Save document (Authoritative single function for all inserts, updates, and upserts)
+export async function saveDocument(
+  doc: DocuFlowDocument,
+  isNew: boolean
+): Promise<{ data: DocuFlowDocument | null; error: any }> {
+  console.log("SAVE START");
+  console.log("Document ID:", doc.id);
+  
+  // Validate authenticated user
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  console.log("Authenticated User:", user?.id);
+  console.log("Title:", doc.title);
+  console.log("Content length:", doc.content?.length);
 
-  const newDoc: DocuFlowDocument = existingDoc || {
-    id: crypto.randomUUID(),
-    title: initialTitle,
-    content: initialContent,
-    user_id: userId,
-    user_email: userEmail,
-    is_starred: false,
-    is_archived: false,
-    icon: icon,
-    category: category,
-    access_level: 'private',
+  if (!user) {
+    console.error("Document save failed: User is not authenticated.");
+    return { data: null, error: new Error("Please sign in to save documents.") };
+  }
+
+  const { wordCount, charCount } = calculateCounts(doc.content);
+  const updatedAt = new Date().toISOString();
+
+  const payload: DocuFlowDocument = {
+    ...doc,
+    user_id: user.id,
+    user_email: user.email || doc.user_email || '',
     word_count: wordCount,
     char_count: charCount,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: updatedAt,
   };
 
-  // Ensure saved to local storage immediately
-  const currentLocal = getLocalDocuments();
-  if (!currentLocal.some(d => d.id === newDoc.id)) {
-    saveLocalDocuments([newDoc, ...currentLocal]);
-  }
+  // Remove React-only temporary flags if any
+  delete (payload as any).isNewUnsaved;
 
-  if (newDoc.user_id === 'guest') {
-    return newDoc;
-  }
+  let resultData: DocuFlowDocument | null = null;
+  let resultError: any = null;
 
-  try {
-    const { data, error } = await supabase.from('documents').insert(newDoc).select().single();
-    if (!error && data) {
-      return data as DocuFlowDocument;
-    } else {
-      console.warn('Supabase create document notice, saving locally:', error?.message);
-    }
-  } catch (e) {
-    console.warn('Supabase insert exception:', e);
-  }
-
-  return newDoc;
-}
-
-// Update document
-export async function updateDocumentInSupabase(
-  docId: string,
-  updates: Partial<DocuFlowDocument>
-): Promise<DocuFlowDocument | null> {
-  if (updates.content) {
-    const { wordCount, charCount } = calculateCounts(updates.content);
-    updates.word_count = wordCount;
-    updates.char_count = charCount;
-  }
-  updates.updated_at = new Date().toISOString();
-
-  // Update local storage first for snappy auto-save UI
-  const localDocs = getLocalDocuments();
-  let updatedDoc: DocuFlowDocument | null = null;
-  const newLocal = localDocs.map(d => {
-    if (d.id === docId) {
-      updatedDoc = { ...d, ...updates };
-      return updatedDoc;
-    }
-    return d;
-  });
-  saveLocalDocuments(newLocal);
-
-  if (updatedDoc && (updatedDoc as DocuFlowDocument).user_id === 'guest') {
-    return updatedDoc;
-  }
-
-  try {
+  if (isNew) {
     const { data, error } = await supabase
       .from('documents')
-      .update(updates)
-      .eq('id', docId)
+      .insert(payload)
       .select()
       .single();
 
-    if (!error && data) {
-      return data as DocuFlowDocument;
-    }
-  } catch (e) {
-    console.warn('Supabase update doc error:', e);
+    resultData = data as DocuFlowDocument | null;
+    resultError = error;
+  } else {
+    const { data, error } = await supabase
+      .from('documents')
+      .update(payload)
+      .eq('id', doc.id)
+      .select()
+      .single();
+
+    resultData = data as DocuFlowDocument | null;
+    resultError = error;
   }
 
-  return updatedDoc;
+  console.log("SAVE RESPONSE:", resultData);
+  console.log("SAVE ERROR:", resultError);
+
+  // If successful, update local storage backup
+  if (!resultError && resultData) {
+    const currentLocal = getLocalDocuments();
+    const exists = currentLocal.some(d => d.id === resultData!.id);
+    const updatedLocal = exists
+      ? currentLocal.map(d => d.id === resultData!.id ? resultData! : d)
+      : [resultData!, ...currentLocal];
+    saveLocalDocuments(updatedLocal);
+  }
+
+  return { data: resultData, error: resultError };
 }
 
 // Delete or archive document
@@ -322,13 +297,31 @@ export async function deleteDocument(docId: string, hardDelete = false) {
       console.warn('Hard delete Supabase notice:', e);
     }
   } else {
-    await updateDocumentInSupabase(docId, { is_archived: true });
+    const local = getLocalDocuments();
+    const doc = local.find(d => d.id === docId);
+    if (doc) {
+      const archivedDoc = { ...doc, is_archived: true };
+      const localDocs = local.map(d => d.id === docId ? archivedDoc : d);
+      saveLocalDocuments(localDocs);
+      if (doc.user_id !== 'guest') {
+        await saveDocument(archivedDoc, false);
+      }
+    }
   }
 }
 
 // Restore from archive
 export async function restoreDocument(docId: string) {
-  await updateDocumentInSupabase(docId, { is_archived: false });
+  const local = getLocalDocuments();
+  const doc = local.find(d => d.id === docId);
+  if (doc) {
+    const restoredDoc = { ...doc, is_archived: false };
+    const localDocs = local.map(d => d.id === docId ? restoredDoc : d);
+    saveLocalDocuments(localDocs);
+    if (doc.user_id !== 'guest') {
+      await saveDocument(restoredDoc, false);
+    }
+  }
 }
 
 // Fetch Comments
