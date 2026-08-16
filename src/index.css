@@ -190,36 +190,17 @@ body {
 
 /* Glass panel wrappers for content */
 .glass-panel {
-  background: #050505;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-}
-
-.glass-panel.theme-light {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
 }
 
 .dark-tech-gradient {
-  background: #050505;
-}
-
-.dark-tech-gradient.theme-light {
   background: #f8fafc;
 }
 
-/* Premium Dark Grid Background */
+/* Premium Light Grid Background */
 .bg-grid-pattern {
-  background-color: #050505;
-  background-image: 
-    radial-gradient(circle at 50% 40%, rgba(15, 23, 42, 0.4) 0%, rgba(5, 5, 5, 0) 70%),
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
-}
-
-.bg-grid-pattern.theme-light {
   background-color: #f8fafc;
   background-image: 
     radial-gradient(circle at 50% 40%, rgba(59, 130, 246, 0.05) 0%, rgba(248, 250, 252, 0) 70%),
@@ -228,24 +209,14 @@ body {
   background-size: 100% 100%, 40px 40px, 40px 40px;
 }
 
-/* Dark theme specific overrides */
+/* Document cards (styled light mode only now) */
 .dark-card {
-  background-color: #0b0b0d;
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.dark-card.theme-light {
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
 .dark-card:hover {
-  background-color: #0f0f12;
-  border-color: rgba(255, 255, 255, 0.06);
-}
-
-.dark-card.theme-light:hover {
   background-color: #f8fafc;
   border-color: #cbd5e1;
 }
@@ -272,22 +243,6 @@ body {
   --sidebar-active-border: #bfdbfe;
   --sidebar-badge-bg: #e2e8f0;
   --sidebar-badge-text: #475569;
-}
-
-[data-theme="dark"] {
-  --sidebar-bg: #050505;
-  --sidebar-text: #94a3b8;
-  --sidebar-text-strong: #ffffff;
-  --sidebar-heading: #64748b;
-  --sidebar-icon: #64748b;
-  --sidebar-border: rgba(255, 255, 255, 0.04);
-  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
-  --sidebar-hover-text: #f1f5f9;
-  --sidebar-active-bg: rgba(37, 99, 235, 0.15);
-  --sidebar-active-text: #60a5fa;
-  --sidebar-active-border: rgba(59, 130, 246, 0.3);
-  --sidebar-badge-bg: #1e293b;
-  --sidebar-badge-text: #94a3b8;
 }
 
 .sidebar-container {

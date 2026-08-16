@@ -52,19 +52,14 @@ export default function App() {
   const [dbHealth, setDbHealth] = useState<DatabaseHealth | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
-  // Theme state with localStorage persistence
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    return (localStorage.getItem('docuflow_theme') as 'light' | 'dark') || 'dark';
-  });
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
+  // Permanently Light Mode
+  const theme: 'light' | 'dark' = 'light';
+  const toggleTheme = () => {};
 
   useEffect(() => {
-    localStorage.setItem('docuflow_theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('docuflow_theme', 'light');
+  }, []);
 
   // Document specific state
   const [comments, setComments] = useState<DocumentComment[]>([]);
@@ -407,16 +402,10 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-[100dvh] md:min-h-screen bg-grid-pattern ${theme === 'light' ? 'theme-light text-slate-800' : 'text-slate-100'} flex flex-col font-sans relative md:overflow-hidden transition-all duration-300`}>
-      {/* Subtle Premium Spotlights */}
-      {theme === 'dark' && (
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-          <div className="absolute top-[-10%] left-[25%] right-[25%] w-[50%] h-[60%] rounded-full bg-blue-900/10 blur-[150px] opacity-40" />
-        </div>
-      )}
+    <div className="min-h-[100dvh] md:min-h-screen bg-grid-pattern theme-light text-slate-800 flex flex-col font-sans relative md:overflow-hidden transition-all duration-300">
       
       {/* Central Glassmorphism App Wrapper */}
-      <div className={`relative z-10 flex-1 flex flex-col w-full md:h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x ${theme === 'light' ? 'lg:border-slate-200 lg:shadow-xl' : 'lg:border-white/[0.03] lg:shadow-2xl'} glass-panel ${theme === 'light' ? 'theme-light' : ''} md:overflow-hidden transition-all duration-500`}>
+      <div className="relative z-10 flex-1 flex flex-col w-full md:h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x lg:border-slate-200 lg:shadow-xl glass-panel theme-light md:overflow-hidden transition-all duration-500">
         {/* If in Editor mode, display full editor */}
       {activeDocId && activeDoc ? (
         <div className="z-10 flex-1 flex flex-col overflow-hidden">

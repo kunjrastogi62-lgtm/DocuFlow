@@ -40,7 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   docCounts,
   isOpenOnMobile = false,
   onCloseMobile,
-  theme = 'dark',
+  theme = 'light',
 }) => {
   const mainNavs = [
     { id: 'all' as ViewTab, label: 'All Documents', icon: FileText, count: docCounts.all },
@@ -289,7 +289,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="text-xs font-semibold flex items-center gap-1.5"
             >
               <span>DocuFlow Cloud</span>
-              <span className="px-1.5 py-0.2 bg-blue-600/30 text-blue-400 dark:text-blue-300 rounded text-[9px] font-mono">PRO</span>
+              <span className="px-1.5 py-0.2 bg-blue-100 text-blue-700 rounded text-[9px] font-mono font-bold">PRO</span>
             </p>
             <p className="text-[10px] text-slate-500">Real-time sync enabled</p>
           </div>

@@ -54,7 +54,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   onDuplicateDoc,
   onRenameDoc,
   onSelectCategory,
-  theme = 'dark',
+  theme = 'light',
   onToggleTheme,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -169,47 +169,6 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
       {showHero && (
         <div className="flex flex-col items-center justify-center pt-10 pb-16 sm:pt-24 sm:pb-24 relative z-10 w-full animate-fade-in">
           
-          {/* Centered Light/Dark option for Mobile users */}
-          <div className="md:hidden flex flex-col items-center justify-center mb-6 animate-fade-in">
-            <span className={`text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${
-              theme === 'light' ? 'text-slate-400' : 'text-slate-500'
-            }`}>
-              Select Theme
-            </span>
-            <div className={`flex items-center p-1 rounded-full border transition-all ${
-              theme === 'light' 
-                ? 'bg-slate-100 border-slate-200 shadow-xs' 
-                : 'bg-[#0c0c0e]/80 border-white/[0.08] backdrop-blur-md'
-            }`}>
-              <button
-                onClick={() => {
-                  if (theme !== 'light' && onToggleTheme) onToggleTheme();
-                }}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                  theme === 'light'
-                    ? 'bg-white text-blue-600 shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <span>☀️</span>
-                <span>Light</span>
-              </button>
-              <button
-                onClick={() => {
-                  if (theme !== 'dark' && onToggleTheme) onToggleTheme();
-                }}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                  theme === 'dark'
-                    ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20'
-                    : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                <span>🌙</span>
-                <span>Dark</span>
-              </button>
-            </div>
-          </div>
-
           {/* Top Status Badge */}
           <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs mb-7 transition-colors ${
             theme === 'light'
@@ -224,12 +183,12 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
           </div>
 
           {/* Main Heading */}
-          <h1 className={`text-4xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-bold tracking-tight leading-[1.08] text-center max-w-4xl mx-auto select-none font-sans transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+          <h1 className="text-[clamp(2.25rem,6.5vw,5rem)] font-bold tracking-tight leading-[1.08] text-center max-w-4xl mx-auto select-none font-sans text-slate-900">
             The workspace that thinks<br className="hidden sm:inline" />before you even write.
           </h1>
 
           {/* Centered Gray Description */}
-          <p className={`max-w-[44rem] mx-auto text-sm sm:text-base md:text-lg leading-relaxed text-center mt-6 px-4 font-normal transition-colors ${theme === 'light' ? 'text-slate-500' : 'text-[#8e8e93]'}`}>
+          <p className="max-w-[44rem] mx-auto text-sm sm:text-base md:text-lg leading-relaxed text-center mt-6 px-4 font-normal text-slate-500">
             DocuFlow is a premium workspace for unified document management — complete with secure real-time collaboration, 256K context support, and automatic version synchronization in a single simplified architecture.
           </p>
 
@@ -238,11 +197,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
             {/* Primary Button */}
             <button
               onClick={() => onNewDoc()}
-              className={`w-full sm:w-auto px-6 py-3.5 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl min-h-[44px] ${
-                theme === 'light'
-                  ? 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/10'
-                  : 'bg-white hover:bg-slate-100 text-black shadow-white/5'
-              }`}
+              className="w-full sm:w-auto px-6 py-3.5 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/10"
             >
               <span>Start Writing</span>
               <span className="text-base font-normal leading-none mb-0.5">→</span>
@@ -256,11 +211,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                   element.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className={`w-full sm:w-auto px-6 py-3.5 border font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm min-h-[44px] ${
-                theme === 'light'
-                  ? 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-900'
-                  : 'bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-slate-300 hover:text-white'
-              }`}
+              className="w-full sm:w-auto px-6 py-3.5 border font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm min-h-[44px] bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-900"
             >
               <span>View Documents</span>
             </button>
@@ -268,15 +219,11 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
 
           {/* Statistics Panel */}
           <div className="w-full max-w-4xl mt-20 sm:mt-28 px-4">
-            <div className={`rounded-[24px] border p-6 sm:py-8 sm:px-10 grid grid-cols-2 md:grid-cols-4 gap-6 relative overflow-hidden transition-colors ${
-              theme === 'light'
-                ? 'border-slate-200 bg-white shadow-xs'
-                : 'border-white/[0.06] bg-[#070709]'
-            }`}>
+            <div className="rounded-[24px] border p-6 sm:py-8 sm:px-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative overflow-hidden bg-white border-slate-200 shadow-xs">
               
               {/* Statistic Column 1 */}
               <div className="flex flex-col items-center justify-center text-center">
-                <span className={`text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight text-slate-900">
                   {documents.length || "12"}
                 </span>
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
@@ -285,8 +232,8 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               </div>
 
               {/* Statistic Column 2 */}
-              <div className={`flex flex-col items-center justify-center text-center border-l transition-colors ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.06]'}`}>
-                <span className={`text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+              <div className="flex flex-col items-center justify-center text-center sm:border-l border-slate-100">
+                <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight text-slate-900">
                   {formatWords(totalWords)}
                 </span>
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
@@ -295,8 +242,8 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               </div>
 
               {/* Statistic Column 3 */}
-              <div className={`flex flex-col items-center justify-center text-center border-l-0 md:border-l transition-colors ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.06]'}`}>
-                <span className={`text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+              <div className="flex flex-col items-center justify-center text-center border-t pt-6 sm:border-t-0 sm:pt-0 lg:border-l border-slate-100">
+                <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight text-slate-900">
                   100%
                 </span>
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
@@ -305,8 +252,8 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               </div>
 
               {/* Statistic Column 4 */}
-              <div className={`flex flex-col items-center justify-center text-center border-l transition-colors ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.06]'}`}>
-                <span className={`text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+              <div className="flex flex-col items-center justify-center text-center border-t pt-6 sm:border-t-0 sm:pt-0 sm:border-l border-slate-100">
+                <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold tracking-tight text-slate-900">
                   256-bit
                 </span>
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">

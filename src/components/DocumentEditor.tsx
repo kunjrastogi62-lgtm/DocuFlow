@@ -75,7 +75,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   onCreateVersion,
   onRestoreVersion,
   isSaving = false,
-  theme = 'dark',
+  theme = 'light',
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [title, setTitle] = useState(doc.title);

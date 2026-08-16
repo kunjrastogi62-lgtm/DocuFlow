@@ -42,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onGoHome,
   onToggleMobileMenu,
   isDbConnected = true,
-  theme = 'dark',
+  theme = 'light',
   onToggleTheme,
 }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -125,20 +125,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Search Documents"
           >
             <Search className="w-5 h-5" />
-          </button>
-
-          {/* Theme Toggle Button - Desktop Only */}
-          <button
-            onClick={onToggleTheme}
-            className={`hidden md:flex p-2 rounded-xl border transition-colors items-center justify-center ${
-              theme === 'light'
-                ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white'
-            }`}
-            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-            aria-label="Toggle Theme"
-          >
-            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
           </button>
 
           {/* New Document Button */}
