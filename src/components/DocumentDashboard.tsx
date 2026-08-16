@@ -185,11 +185,11 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
           </p>
 
           {/* Two Buttons Underneath */}
-          <div className="flex flex-row items-center justify-center gap-4 mt-8 w-full max-w-md px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 w-full max-w-sm px-4">
             {/* Primary Button */}
             <button
               onClick={() => onNewDoc()}
-              className="px-6 py-3.5 bg-white hover:bg-slate-100 text-black font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl shadow-white/5"
+              className="w-full sm:w-auto px-6 py-3.5 bg-white hover:bg-slate-100 text-black font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl shadow-white/5 min-h-[44px]"
             >
               <span>Start Writing</span>
               <span className="text-base font-normal leading-none mb-0.5">→</span>
@@ -203,7 +203,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                   element.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="px-6 py-3.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-slate-300 hover:text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm"
+              className="w-full sm:w-auto px-6 py-3.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 text-slate-300 hover:text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm min-h-[44px]"
             >
               <span>View Documents</span>
             </button>
@@ -234,7 +234,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               </div>
 
               {/* Statistic Column 3 */}
-              <div className="flex flex-col items-center justify-center text-center border-l border-white/[0.06] md:border-l border-white/[0.06]">
+              <div className="flex flex-col items-center justify-center text-center border-l-0 md:border-l border-white/[0.06]">
                 <span className="text-3xl sm:text-4xl lg:text-[2.6rem] font-bold text-white tracking-tight">
                   100%
                 </span>
