@@ -240,6 +240,10 @@ export async function createDocument(
     saveLocalDocuments([newDoc, ...currentLocal]);
   }
 
+  if (newDoc.user_id === 'guest') {
+    return newDoc;
+  }
+
   try {
     const { data, error } = await supabase.from('documents').insert(newDoc).select().single();
     if (!error && data) {
@@ -278,6 +282,10 @@ export async function updateDocumentInSupabase(
   });
   saveLocalDocuments(newLocal);
 
+  if (updatedDoc && (updatedDoc as DocuFlowDocument).user_id === 'guest') {
+    return updatedDoc;
+  }
+
   try {
     const { data, error } = await supabase
       .from('documents')
@@ -299,8 +307,14 @@ export async function updateDocumentInSupabase(
 // Delete or archive document
 export async function deleteDocument(docId: string, hardDelete = false) {
   if (hardDelete) {
-    const local = getLocalDocuments().filter(d => d.id !== docId);
+    const allLocal = getLocalDocuments();
+    const docToDelete = allLocal.find(d => d.id === docId);
+    const local = allLocal.filter(d => d.id !== docId);
     saveLocalDocuments(local);
+
+    if (docToDelete && docToDelete.user_id === 'guest') {
+      return;
+    }
 
     try {
       await supabase.from('documents').delete().eq('id', docId);
@@ -362,6 +376,13 @@ export async function addCommentToSupabase(
     resolved: false,
     created_at: new Date().toISOString(),
   };
+
+  if (userId === 'guest') {
+    const current = await fetchComments(docId);
+    const updated = [...current, newComment];
+    localStorage.setItem(`${LOCAL_COMMENTS_KEY}_${docId}`, JSON.stringify(updated));
+    return newComment;
+  }
 
   try {
     const { data, error } = await supabase.from('comments').insert(newComment).select().single();
@@ -430,6 +451,13 @@ export async function createDocumentVersion(
     created_by: createdBy,
     created_at: new Date().toISOString(),
   };
+
+  if (createdBy === 'guest') {
+    const current = await fetchVersions(docId);
+    const updated = [version, ...current];
+    localStorage.setItem(`${LOCAL_VERSIONS_KEY}_${docId}`, JSON.stringify(updated));
+    return version;
+  }
 
   try {
     const { data, error } = await supabase.from('document_versions').insert(version).select().single();
