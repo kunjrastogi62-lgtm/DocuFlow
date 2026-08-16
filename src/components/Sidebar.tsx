@@ -92,37 +92,78 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <p className="pb-1.5 px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             Documents
           </p>
-          {mainNavs.map((nav) => {
-            const Icon = nav.icon;
-            const isActive = activeTab === nav.id && selectedCategory === null;
-            return (
-              <button
-                key={nav.id}
-                onClick={() => {
-                  onCategorySelect(null);
-                  onTabChange(nav.id);
-                  if (onCloseMobile) onCloseMobile();
-                }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
-                    : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-500'}`} />
-                  <span>{nav.label}</span>
-                </div>
-                {nav.count !== null && nav.count > 0 && (
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    isActive ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-800 text-slate-400'
-                  }`}>
-                    {nav.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          
+          {/* Desktop/Tablet (Original Order) */}
+          <div className="hidden md:flex flex-col space-y-1">
+            {mainNavs.map((nav) => {
+              const Icon = nav.icon;
+              const isActive = activeTab === nav.id && selectedCategory === null;
+              
+              return (
+                <button
+                  key={`desktop-${nav.id}`}
+                  onClick={() => {
+                    onCategorySelect(null);
+                    onTabChange(nav.id);
+                    if (onCloseMobile) onCloseMobile();
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-500'}`} />
+                    <span>{nav.label}</span>
+                  </div>
+                  {nav.count !== null && nav.count > 0 && (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      isActive ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-800 text-slate-400'
+                    }`}>
+                      {nav.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mobile (Trash moved to top) */}
+          <div className="md:hidden flex flex-col space-y-1">
+            {[mainNavs[0], mainNavs[3], mainNavs[1], mainNavs[2]].map((nav) => {
+              const Icon = nav.icon;
+              const isActive = activeTab === nav.id && selectedCategory === null;
+              
+              return (
+                <button
+                  key={`mobile-${nav.id}`}
+                  onClick={() => {
+                    onCategorySelect(null);
+                    onTabChange(nav.id);
+                    if (onCloseMobile) onCloseMobile();
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400' : 'text-slate-500'}`} />
+                    <span>{nav.label}</span>
+                  </div>
+                  {nav.count !== null && nav.count > 0 && (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      isActive ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-800 text-slate-400'
+                    }`}>
+                      {nav.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Categories */}
