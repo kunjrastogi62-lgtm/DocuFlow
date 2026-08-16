@@ -127,10 +127,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Search className="w-5 h-5" />
           </button>
 
-          {/* Theme Toggle Button */}
+          {/* Theme Toggle Button - Desktop Only */}
           <button
             onClick={onToggleTheme}
-            className={`p-2 rounded-xl border transition-colors flex items-center justify-center ${
+            className={`hidden md:flex p-2 rounded-xl border transition-colors items-center justify-center ${
               theme === 'light'
                 ? 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white'
