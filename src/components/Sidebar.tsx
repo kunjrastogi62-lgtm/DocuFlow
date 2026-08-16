@@ -60,15 +60,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <div className="flex flex-col justify-between h-full overflow-y-auto">
       <div className="space-y-5">
         {/* Mobile Header with Close Button */}
-        <div className="md:hidden flex items-center justify-between p-4 border-b sidebar-border">
+        <div 
+          style={{ borderColor: 'var(--sidebar-border)' }}
+          className="md:hidden flex items-center justify-between p-4 border-b"
+        >
           <div className="flex items-center gap-2.5">
             <img src="/logo.svg" alt="DocuFlow" className="w-7 h-7 object-contain" />
-            <span className="font-bold text-base text-[var(--sidebar-text-strong)]">DocuFlow Navigation</span>
+            <span 
+              style={{ color: 'var(--sidebar-text-strong)' }}
+              className="font-bold text-base"
+            >
+              DocuFlow Navigation
+            </span>
           </div>
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="p-1.5 rounded-lg sidebar-icon hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)] transition-colors cursor-pointer"
+              style={{ color: 'var(--sidebar-icon)' }}
+              className="p-1.5 rounded-lg hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)] transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -91,7 +100,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Main Nav Items */}
         <div className="px-3 space-y-1 text-sm">
-          <p className="pb-1.5 px-3 text-[11px] font-bold uppercase tracking-wider sidebar-heading">
+          <p 
+            style={{ color: 'var(--sidebar-heading)' }}
+            className="pb-1.5 px-3 text-[11px] font-bold uppercase tracking-wider"
+          >
             Documents
           </p>
           
@@ -109,18 +121,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onTabChange(nav.id);
                     if (onCloseMobile) onCloseMobile();
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer sidebar-item ${
-                    isActive ? 'sidebar-item-active' : ''
+                  style={{
+                    backgroundColor: isActive ? 'var(--sidebar-active-bg)' : 'transparent',
+                    borderColor: isActive ? 'var(--sidebar-active-border)' : 'transparent',
+                    color: isActive ? 'var(--sidebar-active-text)' : 'var(--sidebar-text)'
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer border ${
+                    isActive ? 'font-semibold' : 'hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4 sidebar-icon" />
+                    <Icon 
+                      style={{ color: isActive ? 'var(--sidebar-active-text)' : 'var(--sidebar-icon)' }}
+                      className="w-4 h-4 transition-colors" 
+                    />
                     <span>{nav.label}</span>
                   </div>
                   {nav.count !== null && nav.count > 0 && (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ${
-                      isActive ? 'sidebar-badge-active' : 'sidebar-badge'
-                    }`}>
+                    <span 
+                      style={{
+                        backgroundColor: isActive ? 'var(--sidebar-active-border)' : 'var(--sidebar-badge-bg)',
+                        color: isActive ? 'var(--sidebar-active-text)' : 'var(--sidebar-badge-text)'
+                      }}
+                      className="px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors"
+                    >
                       {nav.count}
                     </span>
                   )}
@@ -143,18 +167,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onTabChange(nav.id);
                     if (onCloseMobile) onCloseMobile();
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer sidebar-item ${
-                    isActive ? 'sidebar-item-active' : ''
+                  style={{
+                    backgroundColor: isActive ? 'var(--sidebar-active-bg)' : 'transparent',
+                    borderColor: isActive ? 'var(--sidebar-active-border)' : 'transparent',
+                    color: isActive ? 'var(--sidebar-active-text)' : 'var(--sidebar-text)'
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer border ${
+                    isActive ? 'font-semibold' : 'hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4 sidebar-icon" />
+                    <Icon 
+                      style={{ color: isActive ? 'var(--sidebar-active-text)' : 'var(--sidebar-icon)' }}
+                      className="w-4 h-4 transition-colors" 
+                    />
                     <span>{nav.label}</span>
                   </div>
                   {nav.count !== null && nav.count > 0 && (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ${
-                      isActive ? 'sidebar-badge-active' : 'sidebar-badge'
-                    }`}>
+                    <span 
+                      style={{
+                        backgroundColor: isActive ? 'var(--sidebar-active-border)' : 'var(--sidebar-badge-bg)',
+                        color: isActive ? 'var(--sidebar-active-text)' : 'var(--sidebar-badge-text)'
+                      }}
+                      className="px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors"
+                    >
                       {nav.count}
                     </span>
                   )}
@@ -165,9 +201,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Categories */}
-        <div className="px-3 space-y-1 pt-3 border-t sidebar-border text-sm">
+        <div 
+          style={{ borderColor: 'var(--sidebar-border)' }}
+          className="px-3 space-y-1 pt-3 border-t text-sm"
+        >
           <div className="flex items-center justify-between px-3 pb-1.5">
-            <p className="text-[11px] font-bold uppercase tracking-wider sidebar-heading">
+            <p 
+              style={{ color: 'var(--sidebar-heading)' }}
+              className="text-[11px] font-bold uppercase tracking-wider"
+            >
               Categories
             </p>
             {selectedCategory && (
@@ -192,8 +234,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onCategorySelect(isCatActive ? null : cat.id);
                   if (onCloseMobile) onCloseMobile();
                 }}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer sidebar-item ${
-                  isCatActive ? 'sidebar-item-active' : ''
+                style={{
+                  backgroundColor: isCatActive ? 'var(--sidebar-active-bg)' : 'transparent',
+                  borderColor: isCatActive ? 'var(--sidebar-active-border)' : 'transparent',
+                  color: isCatActive ? 'var(--sidebar-active-text)' : 'var(--sidebar-text)'
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-all cursor-pointer border ${
+                  isCatActive ? 'font-semibold' : 'hover:bg-[var(--sidebar-hover-bg)] hover:text-[var(--sidebar-hover-text)]'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -201,9 +248,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span>{cat.label}</span>
                 </div>
                 {isCatActive ? (
-                  <Folder className="w-3.5 h-3.5 sidebar-icon" />
+                  <Folder 
+                    style={{ color: 'var(--sidebar-active-text)' }}
+                    className="w-3.5 h-3.5 transition-colors" 
+                  />
                 ) : (
-                  <span className="text-xs sidebar-icon opacity-60">→</span>
+                  <span 
+                    style={{ color: 'var(--sidebar-icon)' }}
+                    className="text-xs opacity-60"
+                  >
+                    →
+                  </span>
                 )}
               </button>
             );
@@ -212,15 +267,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="p-4 border-t sidebar-border mt-auto">
-        <div className="flex items-center gap-3 p-2 rounded-xl border sidebar-bg-card transition-colors">
+      <div 
+        style={{ borderColor: 'var(--sidebar-border)' }}
+        className="p-4 border-t mt-auto"
+      >
+        <div 
+          style={{
+            backgroundColor: 'var(--sidebar-badge-bg)',
+            borderColor: 'var(--sidebar-border)'
+          }}
+          className="flex items-center gap-3 p-2 rounded-xl border transition-colors"
+        >
           <img 
             src="/logo.svg" 
             alt="DocuFlow Logo" 
             className="w-8 h-8 object-contain"
           />
           <div>
-            <p className="text-xs font-semibold flex items-center gap-1.5 text-[var(--sidebar-text-strong)]">
+            <p 
+              style={{ color: 'var(--sidebar-text-strong)' }}
+              className="text-xs font-semibold flex items-center gap-1.5"
+            >
               <span>DocuFlow Cloud</span>
               <span className="px-1.5 py-0.2 bg-blue-600/30 text-blue-400 dark:text-blue-300 rounded text-[9px] font-mono">PRO</span>
             </p>
@@ -234,7 +301,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <aside className="w-64 shrink-0 flex-col justify-between hidden md:flex min-h-[calc(100vh-64px)] border-r sidebar-container">
+      <aside 
+        style={{
+          backgroundColor: 'var(--sidebar-bg)',
+          borderColor: 'var(--sidebar-border)',
+          color: 'var(--sidebar-text)'
+        }}
+        className="w-64 shrink-0 flex-col justify-between hidden md:flex min-h-[calc(100vh-64px)] border-r transition-colors duration-300"
+      >
         {sidebarContent}
       </aside>
 
@@ -248,7 +322,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
 
           {/* Drawer Canvas */}
-          <div className="relative w-4/5 max-w-xs h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200 border-r sidebar-container">
+          <div 
+            style={{
+              backgroundColor: 'var(--sidebar-bg)',
+              borderColor: 'var(--sidebar-border)',
+              color: 'var(--sidebar-text)'
+            }}
+            className="relative w-4/5 max-w-xs h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200 border-r transition-colors"
+          >
             {sidebarContent}
           </div>
         </div>
