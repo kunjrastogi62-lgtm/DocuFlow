@@ -499,6 +499,7 @@ export default function App() {
                 onRenameDoc={handleRenameDocument}
                 onSelectCategory={setSelectedCategory}
                 theme={theme}
+                onToggleTheme={toggleTheme}
               />
           </div>
 

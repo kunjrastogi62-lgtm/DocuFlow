@@ -37,6 +37,7 @@ interface DocumentDashboardProps {
   onRenameDoc: (docId: string, newTitle: string) => void;
   onSelectCategory?: (category: string | null) => void;
   theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
@@ -54,6 +55,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   onRenameDoc,
   onSelectCategory,
   theme = 'dark',
+  onToggleTheme,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'updated' | 'title' | 'created'>('updated');
@@ -165,8 +167,49 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
       
       {/* 🚀 SCREENSHOT RECREATION HERO SECTION */}
       {showHero && (
-        <div className="flex flex-col items-center justify-center pt-16 pb-16 sm:pt-24 sm:pb-24 relative z-10 w-full animate-fade-in">
+        <div className="flex flex-col items-center justify-center pt-10 pb-16 sm:pt-24 sm:pb-24 relative z-10 w-full animate-fade-in">
           
+          {/* Centered Light/Dark option for Mobile users */}
+          <div className="md:hidden flex flex-col items-center justify-center mb-6 animate-fade-in">
+            <span className={`text-[10px] font-bold uppercase tracking-wider mb-2 transition-colors ${
+              theme === 'light' ? 'text-slate-400' : 'text-slate-500'
+            }`}>
+              Select Theme
+            </span>
+            <div className={`flex items-center p-1 rounded-full border transition-all ${
+              theme === 'light' 
+                ? 'bg-slate-100 border-slate-200 shadow-xs' 
+                : 'bg-[#0c0c0e]/80 border-white/[0.08] backdrop-blur-md'
+            }`}>
+              <button
+                onClick={() => {
+                  if (theme !== 'light' && onToggleTheme) onToggleTheme();
+                }}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  theme === 'light'
+                    ? 'bg-white text-blue-600 shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <span>☀️</span>
+                <span>Light</span>
+              </button>
+              <button
+                onClick={() => {
+                  if (theme !== 'dark' && onToggleTheme) onToggleTheme();
+                }}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20'
+                    : 'text-slate-500 hover:text-slate-300'
+                }`}
+              >
+                <span>🌙</span>
+                <span>Dark</span>
+              </button>
+            </div>
+          </div>
+
           {/* Top Status Badge */}
           <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs mb-7 transition-colors ${
             theme === 'light'
