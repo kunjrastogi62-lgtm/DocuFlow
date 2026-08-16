@@ -58,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <div className="flex flex-col justify-between h-full">
       <div className="space-y-5">
         {/* Mobile Header with Close Button */}
-        <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-800/80">
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-white/[0.05]">
           <div className="flex items-center gap-2.5">
             <img src="/logo.svg" alt="DocuFlow" className="w-7 h-7 object-contain" />
             <span className="text-white font-bold text-base">DocuFlow Navigation</span>
@@ -167,7 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Categories */}
-        <div className="px-3 space-y-1 pt-3 border-t border-slate-800/60 text-sm">
+        <div className="px-3 space-y-1 pt-3 border-t border-white/[0.05] text-sm">
           <div className="flex items-center justify-between px-3 pb-1.5">
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Categories
@@ -216,8 +216,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="p-4 border-t border-slate-800/50 mt-auto">
-        <div className="flex items-center gap-3 p-2 bg-slate-900/60 rounded-xl border border-slate-800/60">
+      <div className="p-4 border-t border-white/[0.05] mt-auto">
+        <div className="flex items-center gap-3 p-2 bg-[#0b0b0d] rounded-xl border border-white/[0.04]">
           <img 
             src="/logo.svg" 
             alt="DocuFlow Logo" 
@@ -238,7 +238,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <aside className="w-64 shrink-0 bg-[#0F172A] flex-col justify-between hidden md:flex text-slate-400 min-h-[calc(100vh-64px)] border-r border-slate-800/60">
+      <aside className="w-64 shrink-0 bg-[#050505]/95 flex-col justify-between hidden md:flex text-slate-400 min-h-[calc(100vh-64px)] border-r border-white/[0.04]">
         {sidebarContent}
       </aside>
 
@@ -247,12 +247,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="fixed inset-0 z-50 md:hidden flex">
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-slate-900/70 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            className="fixed inset-0 bg-black/80 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
             onClick={onCloseMobile}
           />
 
           {/* Drawer Canvas */}
-          <div className="relative w-4/5 max-w-xs bg-[#0F172A] text-slate-400 h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200">
+          <div className="relative w-4/5 max-w-xs bg-[#050505] text-slate-400 h-full shadow-2xl z-10 flex flex-col animate-in slide-in-from-left duration-200 border-r border-white/[0.04]">
             {sidebarContent}
           </div>
         </div>

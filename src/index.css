@@ -163,11 +163,39 @@
 
 /* Glass panel wrappers for content */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.95);
+  background: #050505;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
 }
 
 .dark-tech-gradient {
-  background: linear-gradient(135deg, #09090b 0%, #0f172a 50%, #17102b 100%);
+  background: #050505;
+}
+
+/* Premium Dark Grid Background */
+.bg-grid-pattern {
+  background-color: #050505;
+  background-image: 
+    radial-gradient(circle at 50% 40%, rgba(15, 23, 42, 0.4) 0%, rgba(5, 5, 5, 0) 70%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 40px 40px, 40px 40px;
+}
+
+/* Dark theme specific overrides */
+.dark-card {
+  background-color: #0b0b0d;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.dark-card:hover {
+  background-color: #0f0f12;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Smooth transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
