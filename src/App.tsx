@@ -326,7 +326,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen dark-tech-gradient text-slate-900 flex flex-col font-sans relative overflow-hidden">
+    <div className="min-h-[100dvh] md:min-h-screen dark-tech-gradient text-slate-900 flex flex-col font-sans relative md:overflow-hidden">
       {/* Animated Deep Tech Background */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-[10%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-blue-600/20 mix-blend-screen blur-[120px] opacity-60 animate-blob" />
@@ -336,7 +336,7 @@ export default function App() {
       </div>
       
       {/* Central Glassmorphism App Wrapper */}
-      <div className="relative z-10 flex-1 flex flex-col w-full h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x lg:border-white/20 lg:shadow-2xl glass-panel overflow-hidden transition-all duration-500">
+      <div className="relative z-10 flex-1 flex flex-col w-full md:h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x lg:border-white/20 lg:shadow-2xl glass-panel md:overflow-hidden transition-all duration-500">
         {/* If in Editor mode, display full editor */}
       {activeDocId && activeDoc ? (
         <div className="z-10 flex-1 flex flex-col overflow-hidden">
@@ -361,7 +361,7 @@ export default function App() {
         </div>
       ) : (
         /* Dashboard Mode */
-        <div className="z-10 flex-1 flex flex-col overflow-hidden relative">
+        <div className="z-10 flex-1 flex flex-col md:overflow-hidden relative">
           <Navbar
             user={user}
             profile={profile}
@@ -378,7 +378,7 @@ export default function App() {
             }}
           />
 
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex md:overflow-hidden">
             <Sidebar
               activeTab={activeTab}
               onTabChange={(tab) => {

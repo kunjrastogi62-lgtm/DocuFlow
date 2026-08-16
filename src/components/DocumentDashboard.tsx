@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText, 
   Star, 
@@ -56,8 +56,19 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'updated' | 'title' | 'created'>('updated');
   const [menuOpenDocId, setMenuOpenDocId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const [renamingDocId, setRenamingDocId] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState('');
+
+  useEffect(() => {
+    const handleClickOutside = () => setMenuOpenDocId(null);
+    if (menuOpenDocId) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [menuOpenDocId]);
 
   const categoryPills = [
     { id: null, label: 'All', color: 'bg-slate-400' },
@@ -139,7 +150,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   };
 
   return (
-    <div className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto max-w-6xl mx-auto w-full space-y-4 sm:space-y-6 pb-20 md:pb-8">
+    <div className="flex-1 p-3.5 sm:p-6 lg:p-8 md:overflow-y-auto max-w-6xl mx-auto w-full space-y-4 sm:space-y-6 pb-20 md:pb-8">
       {/* Page Heading & Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200/80 pb-4 sm:pb-6">
         <div>
@@ -268,10 +279,10 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
             <div
               key={doc.id}
               onClick={() => onOpenDoc(doc.id)}
-              className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-slate-300 transition-all overflow-hidden flex flex-col justify-between cursor-pointer group"
+              className="bg-white rounded-2xl border border-slate-200 shadow-xs hover:shadow-md hover:border-slate-300 transition-all flex flex-col justify-between cursor-pointer group"
             >
               {/* Card Header */}
-              <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/50">
+              <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
                     <span className="text-2xl p-2 bg-white rounded-xl border border-slate-200/80 shadow-2xs group-hover:scale-105 transition-transform shrink-0">
@@ -317,14 +328,28 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
 
                     <div className="relative">
                       <button
-                        onClick={() => setMenuOpenDocId(menuOpenDocId === doc.id ? null : doc.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (menuOpenDocId === doc.id) {
+                            setMenuOpenDocId(null);
+                            return;
+                          }
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const spaceBelow = window.innerHeight - rect.bottom;
+                          if (spaceBelow < 220) {
+                            setMenuPosition('top');
+                          } else {
+                            setMenuPosition('bottom');
+                          }
+                          setMenuOpenDocId(doc.id);
+                        }}
                         className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
 
                       {menuOpenDocId === doc.id && (
-                        <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 animate-in fade-in zoom-in-95 duration-100">
+                        <div className={`absolute right-0 ${menuPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'} w-44 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100`}>
                           <button
                             onClick={(e) => handleStartRename(doc, e)}
                             className="w-full text-left px-3.5 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 font-medium"
@@ -407,7 +432,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               </div>
 
               {/* Card Footer */}
-              <div className="px-4 sm:px-5 py-2.5 sm:py-3 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <div className="px-4 sm:px-5 py-2.5 sm:py-3 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 rounded-b-2xl">
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <span className="font-semibold text-slate-700">
                     {doc.word_count || 0} words
