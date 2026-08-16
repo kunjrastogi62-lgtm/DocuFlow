@@ -63,6 +63,7 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('docuflow_theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   // Document specific state

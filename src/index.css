@@ -256,3 +256,93 @@ body {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+
+/* Sidebar Theme Variables & Styles */
+:root {
+  --sidebar-bg: #f8fafc;
+  --sidebar-text: #475569;
+  --sidebar-text-strong: #0f172a;
+  --sidebar-heading: #64748b;
+  --sidebar-icon: #64748b;
+  --sidebar-border: #e2e8f0;
+  --sidebar-hover-bg: #f1f5f9;
+  --sidebar-hover-text: #0f172a;
+  --sidebar-active-bg: #eff6ff;
+  --sidebar-active-text: #2563eb;
+  --sidebar-active-border: #bfdbfe;
+  --sidebar-badge-bg: #e2e8f0;
+  --sidebar-badge-text: #475569;
+}
+
+[data-theme="dark"] {
+  --sidebar-bg: #050505;
+  --sidebar-text: #94a3b8;
+  --sidebar-text-strong: #ffffff;
+  --sidebar-heading: #64748b;
+  --sidebar-icon: #64748b;
+  --sidebar-border: rgba(255, 255, 255, 0.04);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-hover-text: #f1f5f9;
+  --sidebar-active-bg: rgba(37, 99, 235, 0.15);
+  --sidebar-active-text: #60a5fa;
+  --sidebar-active-border: rgba(59, 130, 246, 0.3);
+  --sidebar-badge-bg: #1e293b;
+  --sidebar-badge-text: #94a3b8;
+}
+
+.sidebar-container {
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  border-color: var(--sidebar-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-heading {
+  color: var(--sidebar-heading) !important;
+}
+
+.sidebar-item {
+  color: var(--sidebar-text);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover {
+  background-color: var(--sidebar-hover-bg) !important;
+  color: var(--sidebar-hover-text) !important;
+}
+
+.sidebar-item-active {
+  background-color: var(--sidebar-active-bg) !important;
+  color: var(--sidebar-active-text) !important;
+  border-color: var(--sidebar-active-border) !important;
+  font-weight: 600 !important;
+}
+
+.sidebar-icon {
+  color: var(--sidebar-icon);
+  transition: color 0.2s ease;
+}
+
+.sidebar-item-active .sidebar-icon {
+  color: var(--sidebar-active-text) !important;
+}
+
+.sidebar-badge {
+  background-color: var(--sidebar-badge-bg) !important;
+  color: var(--sidebar-badge-text) !important;
+}
+
+.sidebar-badge-active {
+  background-color: var(--sidebar-active-border) !important;
+  color: var(--sidebar-active-text) !important;
+}
+
+.sidebar-border {
+  border-color: var(--sidebar-border) !important;
+}
+
+.sidebar-bg-card {
+  background-color: var(--sidebar-badge-bg) !important;
+  border-color: var(--sidebar-border) !important;
+}
