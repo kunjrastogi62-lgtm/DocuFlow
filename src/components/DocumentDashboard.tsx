@@ -239,7 +239,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               onClick={() => onNewDoc()}
               className="w-full sm:w-auto px-5 py-3 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/10"
             >
-              <span>Start Writing</span>
+              <span>Get Started</span>
               <span className="text-base font-normal leading-none mb-0.5">→</span>
             </button>
 

@@ -402,10 +402,31 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-[100dvh] md:min-h-screen bg-grid-pattern theme-light text-slate-800 flex flex-col font-sans relative md:overflow-hidden transition-all duration-300">
+    <div className="min-h-[100dvh] md:min-h-screen atmospheric-bg bg-grid-pattern theme-light text-slate-800 flex flex-col font-sans relative md:overflow-hidden transition-all duration-300">
       
+      {/* Ambient Atmospheric Bloom Elements matching screenshot */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+        {/* Luminous Pale White-Cyan Center Glow */}
+        <div className="absolute top-[18%] left-[24%] w-[42rem] h-[34rem] bg-white/70 rounded-full blur-[110px] transform -translate-x-1/2 -translate-y-1/2" />
+        
+        {/* Soft Pale Cyan-Blue Top-Left Diffuse */}
+        <div className="absolute top-[4%] left-[6%] w-[34rem] h-[28rem] bg-[#e0f0ff]/80 rounded-full blur-[90px]" />
+        
+        {/* Deep Vibrant Violet/Purple Bloom on Right */}
+        <div className="absolute top-[38%] right-[-6%] w-[44rem] h-[46rem] bg-[#7d64f0]/50 rounded-full blur-[130px]" />
+        
+        {/* Saturated Bottom-Right Violet Glow */}
+        <div className="absolute bottom-[-12%] right-[8%] w-[36rem] h-[36rem] bg-[#674ee5]/55 rounded-full blur-[120px]" />
+        
+        {/* Deep Ocean Sapphire/Periwinkle on Bottom-Left */}
+        <div className="absolute bottom-[-6%] left-[-6%] w-[38rem] h-[38rem] bg-[#3a62d7]/50 rounded-full blur-[110px]" />
+        
+        {/* Top-Right Dusky Violet Accent */}
+        <div className="absolute top-[-6%] right-[14%] w-[30rem] h-[26rem] bg-[#53438f]/40 rounded-full blur-[95px]" />
+      </div>
+
       {/* Central Glassmorphism App Wrapper */}
-      <div className="relative z-10 flex-1 flex flex-col w-full md:h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x lg:border-slate-200 lg:shadow-xl glass-panel theme-light md:overflow-hidden transition-all duration-500">
+      <div className="relative z-10 flex-1 flex flex-col w-full md:h-full lg:max-w-[1600px] lg:mx-auto lg:my-0 lg:border-x lg:border-white/40 lg:shadow-2xl glass-panel theme-light md:overflow-hidden transition-all duration-500">
         {/* If in Editor mode, display full editor */}
       {activeDocId && activeDoc ? (
         <div className="z-10 flex-1 flex flex-col overflow-hidden">

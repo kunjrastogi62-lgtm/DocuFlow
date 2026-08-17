@@ -190,7 +190,7 @@ body {
 
 /* Glass panel wrappers for content */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
 }
@@ -199,14 +199,36 @@ body {
   background: #f8fafc;
 }
 
-/* Premium Light Grid Background */
-.bg-grid-pattern {
-  background-color: #f8fafc;
-  background-image: 
-    radial-gradient(circle at 50% 40%, rgba(59, 130, 246, 0.05) 0%, rgba(248, 250, 252, 0) 70%),
-    linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
+/* Atmospheric Glowing Blue/Periwinkle/Violet Background (Recreation of Screenshot) */
+.bg-grid-pattern,
+.atmospheric-bg {
+  background-color: #9abdf8;
+  background-image:
+    /* Top-center / middle-left luminous frost-white & cyan glow */
+    radial-gradient(ellipse 75% 65% at 28% 36%, rgba(255, 255, 255, 0.94) 0%, rgba(240, 248, 255, 0.8) 25%, rgba(205, 228, 255, 0.45) 52%, transparent 75%),
+    
+    /* Top-left airy pale cyan-blue */
+    radial-gradient(ellipse 65% 55% at 10% 12%, rgba(224, 240, 255, 0.95) 0%, rgba(188, 218, 255, 0.72) 42%, transparent 72%),
+    
+    /* Right side & bottom-right deep vibrant violet / purple bloom */
+    radial-gradient(ellipse 72% 78% at 92% 54%, #775de8 0%, #8c75f5 24%, #a797fb 48%, rgba(167, 151, 251, 0.4) 74%, transparent 92%),
+    
+    /* Bottom-right saturated deep purple depth */
+    radial-gradient(ellipse 68% 62% at 86% 96%, #5a3ed8 0%, #745ae5 34%, rgba(116, 90, 229, 0.5) 65%, transparent 88%),
+    
+    /* Bottom-left deep oceanic sapphire / periwinkle */
+    radial-gradient(ellipse 68% 62% at 4% 94%, #3459c7 0%, #486edb 34%, rgba(79, 118, 230, 0.6) 65%, transparent 88%),
+    
+    /* Top-right dusky indigo/violet mist */
+    radial-gradient(ellipse 58% 48% at 88% 8%, #4a3c80 0%, #64539f 35%, rgba(100, 83, 159, 0.45) 60%, transparent 82%),
+    
+    /* Center-bottom periwinkle bridge */
+    radial-gradient(ellipse 62% 52% at 50% 86%, #7496f0 0%, rgba(138, 170, 248, 0.55) 45%, transparent 76%),
+    
+    /* Base rich celestial gradient */
+    linear-gradient(135deg, #aecdfa 0%, #c4d7fc 25%, #e0e9fd 45%, #b2a7f8 70%, #7b66e8 100%);
+  background-attachment: fixed;
+  background-size: 100% 100%;
 }
 
 /* Document cards (styled light mode only now) */
