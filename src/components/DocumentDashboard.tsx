@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FileText, 
   Star, 
@@ -18,9 +18,11 @@ import {
   Sparkles,
   Filter,
   CheckCircle2,
-  Folder
+  Folder,
+  UploadCloud
 } from 'lucide-react';
 import { DocuFlowDocument, ViewTab } from '../types';
+import { importDocumentFile } from '../lib/documentImporter';
 
 interface DocumentDashboardProps {
   documents: DocuFlowDocument[];
@@ -63,6 +65,44 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const [renamingDocId, setRenamingDocId] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState('');
+
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    setImportError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    setImportError(null);
+
+    try {
+      const result = await importDocumentFile(file);
+      
+      let finalTitle = result.title;
+      let counter = 1;
+      while (documents.some((d) => d.title.toLowerCase() === finalTitle.toLowerCase() && !d.is_archived)) {
+        finalTitle = `${result.title} (${counter})`;
+        counter++;
+      }
+
+      onNewDoc(finalTitle, result.content, 'general', result.icon);
+    } catch (err: any) {
+      console.error('Import error:', err);
+      setImportError(err.message || 'Failed to parse the document.');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = () => setMenuOpenDocId(null);
@@ -192,15 +232,25 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
             DocuFlow is a premium workspace for unified document management — complete with secure real-time collaboration, 256K context support, and automatic version synchronization in a single simplified architecture.
           </p>
 
-          {/* Two Buttons Underneath */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 w-full max-w-sm px-4">
+          {/* Three Buttons Underneath */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-8 w-full max-w-lg px-4">
             {/* Primary Button */}
             <button
               onClick={() => onNewDoc()}
-              className="w-full sm:w-auto px-6 py-3.5 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/10"
+              className="w-full sm:w-auto px-5 py-3 font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm shadow-xl min-h-[44px] bg-slate-900 hover:bg-slate-800 text-white shadow-slate-900/10"
             >
               <span>Start Writing</span>
               <span className="text-base font-normal leading-none mb-0.5">→</span>
+            </button>
+
+            {/* Import Button */}
+            <button
+              onClick={handleImportClick}
+              className="w-full sm:w-auto px-5 py-3 border font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm min-h-[44px] bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-600 shadow-xs hover:shadow-sm"
+              title="Import PDF, Word, TXT, RTF, or Markdown file"
+            >
+              <UploadCloud className="w-4 h-4 text-blue-500" />
+              <span>Import Document</span>
             </button>
 
             {/* Secondary Button */}
@@ -211,7 +261,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                   element.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className="w-full sm:w-auto px-6 py-3.5 border font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm min-h-[44px] bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-900"
+              className="w-full sm:w-auto px-5 py-3 border font-semibold rounded-xl flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer text-sm min-h-[44px] bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 hover:text-slate-900"
             >
               <span>View Documents</span>
             </button>
@@ -295,7 +345,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
           </div>
 
           {/* View Mode & Sorting Controls */}
-          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end shrink-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-start sm:justify-end shrink-0">
             {activeTab === 'trash' && sortedDocs.length > 0 && (
               <button
                 onClick={() => {
@@ -308,6 +358,17 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                 <Trash2 className="w-3.5 h-3.5 text-red-400" />
                 <span className="hidden sm:inline">Empty Trash</span>
                 <span className="sm:hidden">Empty</span>
+              </button>
+            )}
+
+            {activeTab !== 'trash' && (
+              <button
+                onClick={handleImportClick}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold rounded-xl border border-blue-200 transition-all cursor-pointer shadow-xs hover:shadow-sm"
+                title="Import PDF, Word, TXT, RTF, or Markdown file"
+              >
+                <UploadCloud className="w-3.5 h-3.5 text-blue-500" />
+                <span>Import</span>
               </button>
             )}
 
@@ -390,6 +451,22 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
           </div>
         )}
 
+        {/* Error and Loading Banner for Import */}
+        {importError && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl text-xs sm:text-sm font-medium flex items-center justify-between gap-2 shadow-xs mb-6 animate-in fade-in duration-200 shrink-0">
+            <div className="flex items-center gap-2">
+              <span className="text-base shrink-0">⚠️</span>
+              <span>{importError}</span>
+            </div>
+            <button
+              onClick={() => setImportError(null)}
+              className="text-red-500 hover:text-red-700 font-bold px-2 py-1 rounded-md hover:bg-red-100 transition-colors cursor-pointer shrink-0"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Document Grid / List */}
         {sortedDocs.length === 0 ? (
           <div className={`py-12 sm:py-16 text-center rounded-2xl border p-6 sm:p-8 transition-colors ${
@@ -402,15 +479,26 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
             <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-6">
               {searchQuery
                 ? `No documents match "${searchQuery}". Try a different keyword.`
-                : 'Create your first document to get started with DocuFlow.'}
+                : 'Create or import your first document to get started with DocuFlow.'}
             </p>
-            <button
-              onClick={() => onNewDoc()}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create New Document</span>
-            </button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={() => onNewDoc()}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer min-h-[44px]"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Create New Document</span>
+              </button>
+              {activeTab !== 'trash' && (
+                <button
+                  onClick={handleImportClick}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl border border-slate-200 transition-all cursor-pointer min-h-[44px] shadow-xs"
+                >
+                  <UploadCloud className="w-4 h-4 text-slate-500" />
+                  <span>Import Document</span>
+                </button>
+              )}
+            </div>
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
@@ -757,6 +845,29 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
         )}
 
       </div>
+
+      {/* Hidden File Input for Document Import */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".pdf,.docx,.txt,.rtf,.md"
+        className="hidden"
+      />
+
+      {/* Premium Dynamic Loading Overlay */}
+      {isImporting && (
+        <div className="fixed inset-0 bg-white/85 backdrop-blur-md z-50 flex flex-col items-center justify-center gap-4 animate-in fade-in duration-200">
+          <div className="relative flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin" />
+            <UploadCloud className="w-6 h-6 text-blue-600 absolute animate-bounce" />
+          </div>
+          <div className="text-center space-y-1">
+            <p className="text-base font-bold text-slate-800">Parsing & Importing Document...</p>
+            <p className="text-xs text-slate-500 font-medium">Extracting formatting structure and converting to rich-text...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
