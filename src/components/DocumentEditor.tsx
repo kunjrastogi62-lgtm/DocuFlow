@@ -87,6 +87,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   onShowToast,
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLElement>(null);
   const [title, setTitle] = useState(doc.title);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState<'editor' | 'comments' | 'versions'>('editor');
@@ -130,6 +131,29 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   const readingTimeMin = useMemo(() => {
     return Math.max(1, Math.ceil((liveWordCount || 1) / 200));
   }, [liveWordCount]);
+
+  const estimatedPages = useMemo(() => {
+    return Math.max(1, Math.ceil((liveWordCount || 1) / 450));
+  }, [liveWordCount]);
+
+  // Keep typing caret within visible viewport without sudden jumping
+  const keepCaretInView = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || !scrollViewportRef.current) return;
+    try {
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const viewportRect = scrollViewportRef.current.getBoundingClientRect();
+
+      if (rect.bottom > viewportRect.bottom - 90) {
+        scrollViewportRef.current.scrollBy({ top: rect.bottom - (viewportRect.bottom - 90), behavior: 'smooth' });
+      } else if (rect.top > 0 && rect.top < viewportRect.top + 80) {
+        scrollViewportRef.current.scrollBy({ top: rect.top - (viewportRect.top + 80), behavior: 'smooth' });
+      }
+    } catch {
+      // Ignore if range is detached
+    }
+  };
 
   const availableIcons = ['📄', '📝', '🚀', '💡', '📊', '🎯', '📑', '🛠️', '📌', '📚', '✍️', '💼', '⚡', '🌟', '📋'];
   const categoriesList: Array<{ id: DocuFlowDocument['category']; label: string; color: string }> = [
@@ -217,6 +241,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
       onUpdateDocument(doc.id, { content: html });
       updateHeadingsOutline();
       calculateLiveStats();
+      keepCaretInView();
     }
   };
 
@@ -275,12 +300,13 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
     }
   };
 
-  // Track selection for inline commenting
+  // Track selection for inline commenting and keep caret in view
   const handleSelectionChange = () => {
     const sel = window.getSelection();
     if (sel && sel.toString().trim().length > 0) {
       setSelectedText(sel.toString().trim());
     }
+    keepCaretInView();
   };
 
   // Extract headings for outline sidebar
@@ -1036,16 +1062,21 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
         )}
 
         {/* Editor Page Canvas Area */}
-        <main className="flex-1 overflow-y-auto p-2 sm:p-6 md:p-8 flex justify-center bg-slate-100/90">
-          <div className="w-full max-w-[850px] bg-white min-h-[750px] sm:min-h-[1050px] p-4 sm:p-8 md:p-14 rounded-2xl shadow-xl border border-slate-200/90 relative mb-12 my-1 sm:my-2">
+        <main
+          ref={scrollViewportRef}
+          className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-6 md:p-8 flex flex-col items-center bg-slate-100/90"
+        >
+          <div className="w-full max-w-[850px] bg-white min-h-[1050px] h-auto p-4 sm:p-8 md:p-14 rounded-2xl shadow-xl border border-slate-200/90 relative mb-28 my-1 sm:my-3 flex flex-col document-sheet-container">
             {/* Page Header badge */}
-            <div className="text-[10px] text-slate-400 font-mono tracking-wider uppercase mb-4 sm:mb-6 pb-2 border-b border-slate-100 flex items-center justify-between">
+            <div className="text-[10px] text-slate-400 font-mono tracking-wider uppercase mb-4 sm:mb-6 pb-2 border-b border-slate-100 flex items-center justify-between no-print">
               <span>DocuFlow • {doc.category?.toUpperCase() || 'GENERAL'}</span>
               <div className="flex items-center gap-2">
                 {showSourceCode && (
                   <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">HTML Source Mode</span>
                 )}
-                <span>{doc.word_count || 0} Words</span>
+                <span>~{estimatedPages} {estimatedPages === 1 ? 'Page' : 'Pages'}</span>
+                <span>•</span>
+                <span>{liveWordCount || 0} Words</span>
               </div>
             </div>
 
@@ -1057,7 +1088,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                   setSourceHtml(e.target.value);
                   onUpdateDocument(doc.id, { content: e.target.value });
                 }}
-                className="w-full min-h-[600px] sm:min-h-[850px] font-mono text-xs p-3 sm:p-4 bg-[#0F172A] text-slate-200 rounded-xl border border-slate-800 focus:outline-none leading-relaxed font-normal"
+                className="w-full min-h-[850px] h-auto flex-1 font-mono text-xs p-3 sm:p-4 bg-[#0F172A] text-slate-200 rounded-xl border border-slate-800 focus:outline-none leading-relaxed font-normal resize-y"
                 placeholder="<h1>Type HTML source here...</h1>"
               />
             ) : (
@@ -1067,10 +1098,13 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                 onInput={handleEditorInput}
                 onMouseUp={handleSelectionChange}
                 onKeyUp={handleSelectionChange}
-                className="prose prose-slate max-w-none focus:outline-hidden min-h-[600px] sm:min-h-[850px] leading-relaxed text-slate-800"
+                className="prose prose-slate max-w-none focus:outline-hidden min-h-[850px] h-auto flex-1 leading-relaxed text-slate-800 break-words"
                 style={{
                   fontFamily: fontFamily,
                   fontSize: fontSize,
+                  minHeight: '850px',
+                  height: 'auto',
+                  overflow: 'visible',
                 }}
               />
             )}
