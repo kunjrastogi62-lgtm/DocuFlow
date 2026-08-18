@@ -32,6 +32,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   canClose = true 
 }) => {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -52,6 +53,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isSignUp && !identifier.trim()) {
+      setErrorMsg('Please enter your username or Gmail.');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg(null);
     setInfoMsg(null);
@@ -95,8 +102,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setIsAwaitingConfirmation(true);
       } else {
         // Sign in for existing users - logs in directly without confirm email screen
+        const identifierStr = identifier.trim();
+        let loginEmail = identifierStr;
+
+        if (!identifierStr.includes('@')) {
+          const { data: profile, error: profileErr } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('username', identifierStr)
+            .maybeSingle();
+
+          if (profile && profile.email) {
+            loginEmail = profile.email;
+          } else {
+            setErrorMsg('Username or Gmail not found. Please check your details and try again.');
+            setLoading(false);
+            return;
+          }
+        }
+
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: userEmail,
+          email: loginEmail,
           password: password,
         });
 
@@ -390,50 +416,66 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Enter your username</label>
-                <div className="relative">
-                  <AtSign className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
-                    className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
-                  />
-                </div>
-              </div>
-
-              {isSignUp && (
+              {!isSignUp ? (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Username or Gmail</label>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Jane Doe"
+                      required
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="Enter your username or Gmail"
                       className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
                     />
                   </div>
                 </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Enter your username</label>
+                    <div className="relative">
+                      <AtSign className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        required
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Enter your username"
+                        className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Jane Doe"
+                        className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">Enter Your Gmail</label>
+                    <div className="relative">
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="name@gmail.com"
+                        className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
+                      />
+                    </div>
+                  </div>
+                </>
               )}
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Enter Your Gmail</label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@gmail.com"
-                    className="w-full text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden"
-                  />
-                </div>
-              </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Password</label>
