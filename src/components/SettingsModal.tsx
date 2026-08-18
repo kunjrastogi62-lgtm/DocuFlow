@@ -52,47 +52,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
               Account Overview
             </h4>
-            {user === null ? (
-              <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-slate-200 text-slate-500 font-bold text-sm">
-                  G
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                    Guest User
-                  </p>
-                  <p className="text-[11px] text-slate-500 truncate">
-                    Guest workspace
-                  </p>
-                </div>
+            <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
+              <img
+                src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email || 'user'}`}
+                alt="Avatar"
+                className="w-10 h-10 rounded-full border border-slate-200 object-cover"
+              />
+              <div className="min-w-0 flex-1 flex flex-col justify-center">
+                <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                  {user 
+                    ? (profile?.full_name || profile?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0])
+                    : 'Guest User'}
+                </p>
               </div>
-            ) : !user ? (
-               <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3 text-slate-500 text-xs">
-                 Loading account...
-               </div>
-            ) : (
-              <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
-                {profile?.avatar_url ? (
-                  <img
-                    src={profile.avatar_url}
-                    alt="Avatar"
-                    className="w-10 h-10 rounded-full border border-slate-200 object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center bg-blue-100 text-blue-700 font-bold text-sm uppercase">
-                    {(profile?.full_name || user?.email || 'U').charAt(0)}
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                    {profile?.full_name || profile?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
-                  </p>
-                  <p className="text-[11px] text-slate-500 truncate">
-                    {user?.email}
-                  </p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Editor Typography Defaults */}
