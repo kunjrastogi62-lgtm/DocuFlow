@@ -6,18 +6,18 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   settings: UserSettings;
-  onUpdateSettings: (newSettings: Partial<UserSettings>) => void;
-  profile: UserProfile | null;
-  user: any;
+  onSaveSettings: (newSettings: Partial<UserSettings>) => void;
+  profile?: UserProfile | null;
+  user?: any;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   settings,
-  onUpdateSettings,
-  profile,
-  user,
+  onSaveSettings,
+  profile = null,
+  user = null,
 }) => {
   if (!isOpen) return null;
 
@@ -79,7 +79,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <label className="block text-xs font-medium text-slate-700 mb-1">Default Font</label>
                 <select
                   value={settings.defaultFont}
-                  onChange={(e) => onUpdateSettings({ defaultFont: e.target.value })}
+                  onChange={(e) => onSaveSettings({ defaultFont: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 outline-hidden focus:ring-2 focus:ring-blue-100"
                 >
                   <option value="Inter, sans-serif">Inter (Clean Sans)</option>
@@ -93,7 +93,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <label className="block text-xs font-medium text-slate-700 mb-1">Default Size</label>
                 <select
                   value={settings.defaultFontSize}
-                  onChange={(e) => onUpdateSettings({ defaultFontSize: e.target.value })}
+                  onChange={(e) => onSaveSettings({ defaultFontSize: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 outline-hidden focus:ring-2 focus:ring-blue-100"
                 >
                   <option value="14px">14px (Compact)</option>
@@ -114,7 +114,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <label className="block text-xs font-medium text-slate-700 mb-1">Default Category for New Documents</label>
               <select
                 value={settings.defaultCategory}
-                onChange={(e) => onUpdateSettings({ defaultCategory: e.target.value as any })}
+                onChange={(e) => onSaveSettings({ defaultCategory: e.target.value as any })}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 outline-hidden focus:ring-2 focus:ring-blue-100"
               >
                 <option value="general">General</option>
@@ -141,7 +141,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <input
                   type="checkbox"
                   checked={settings.showWordCount}
-                  onChange={(e) => onUpdateSettings({ showWordCount: e.target.checked })}
+                  onChange={(e) => onSaveSettings({ showWordCount: e.target.checked })}
                   className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
               </label>
@@ -154,7 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <input
                   type="checkbox"
                   checked={settings.showReadingTime}
-                  onChange={(e) => onUpdateSettings({ showReadingTime: e.target.checked })}
+                  onChange={(e) => onSaveSettings({ showReadingTime: e.target.checked })}
                   className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
               </label>

@@ -774,6 +774,8 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onSaveSettings={handleUpdateSettings}
+        profile={profile}
+        user={user}
       />
 
       {/* Keyboard Shortcuts Modal */}
