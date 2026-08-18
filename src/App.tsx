@@ -17,13 +17,25 @@ import {
   calculateCounts
 } from './lib/supabase';
 import { supabase } from './lib/supabase';
-import { DocuFlowDocument, UserProfile, ViewTab, DocumentComment, DocumentVersion } from './types';
+import { 
+  DocuFlowDocument, 
+  UserProfile, 
+  ViewTab, 
+  DocumentComment, 
+  DocumentVersion,
+  UserSettings,
+  ToastMessage
+} from './types';
 
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
 import { DocumentDashboard } from './components/DocumentDashboard';
 import { DocumentEditor } from './components/DocumentEditor';
 import { AuthModal } from './components/AuthModal';
+import { CommandPalette } from './components/CommandPalette';
+import { SettingsModal } from './components/SettingsModal';
+import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
+import { ToastContainer } from './components/ToastContainer';
 import { 
   FileText, 
   Star, 
@@ -39,6 +51,16 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
+const DEFAULT_SETTINGS: UserSettings = {
+  autoSaveInterval: 15,
+  defaultFontFamily: 'sans',
+  spellCheck: true,
+  focusMode: false,
+  showWordCount: true,
+  soundEffects: false,
+  defaultCategory: 'general',
+};
+
 export default function App() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -51,6 +73,47 @@ export default function App() {
   const [isSaving, setIsSaving] = useState(false);
   const [dbHealth, setDbHealth] = useState<DatabaseHealth | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Professional Modals & Utility States
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // User Settings State
+  const [settings, setSettings] = useState<UserSettings>(() => {
+    try {
+      const saved = localStorage.getItem('docuflow_user_settings');
+      return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+    } catch {
+      return DEFAULT_SETTINGS;
+    }
+  });
+
+  const handleUpdateSettings = (newSettings: Partial<UserSettings>) => {
+    setSettings((prev) => {
+      const updated = { ...prev, ...newSettings };
+      localStorage.setItem('docuflow_user_settings', JSON.stringify(updated));
+      return updated;
+    });
+    showToast('Settings saved successfully', 'success');
+  };
+
+  // Toast notifications helper
+  const showToast = useCallback((
+    message: string,
+    type: 'success' | 'info' | 'error' | 'warning' = 'info',
+    actionLabel?: string,
+    onAction?: () => void
+  ) => {
+    const id = crypto.randomUUID();
+    const newToast: ToastMessage = { id, message, type, actionLabel, onAction };
+    setToasts((prev) => [...prev, newToast]);
+  }, []);
+
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
   
   // Permanently Light Mode
   const theme: 'light' | 'dark' = 'light';
@@ -60,6 +123,42 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', 'light');
     localStorage.setItem('docuflow_theme', 'light');
   }, []);
+
+  // Global Keyboard Shortcuts (Ctrl+K / Cmd+K, ?, Escape)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Command Palette (Ctrl+K or Cmd+K)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+        return;
+      }
+
+      // Keyboard Shortcuts guide ('?' when not actively typing in an input/textarea/editor)
+      const target = e.target as HTMLElement;
+      const isTyping = 
+        target.tagName === 'INPUT' || 
+        target.tagName === 'TEXTAREA' || 
+        target.isContentEditable ||
+        target.closest('[contenteditable="true"]');
+
+      if (!isTyping && e.key === '?') {
+        e.preventDefault();
+        setIsShortcutsOpen(true);
+        return;
+      }
+
+      // Escape key closes open modals
+      if (e.key === 'Escape') {
+        if (isCommandPaletteOpen) setIsCommandPaletteOpen(false);
+        if (isShortcutsOpen) setIsShortcutsOpen(false);
+        if (isSettingsOpen) setIsSettingsOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isCommandPaletteOpen, isShortcutsOpen, isSettingsOpen]);
 
   // Document specific state
   const [comments, setComments] = useState<DocumentComment[]>([]);
@@ -246,6 +345,7 @@ export default function App() {
   const handleToggleStar = async (docId: string, currentStarred: boolean) => {
     const nextStarred = !currentStarred;
     handleUpdateDocument(docId, { is_starred: nextStarred });
+    showToast(nextStarred ? 'Document starred' : 'Document unstarred', 'info');
 
     const doc = documents.find((d) => d.id === docId);
     if (doc && !(doc as any).isNewUnsaved && doc.user_id !== 'guest') {
@@ -261,8 +361,10 @@ export default function App() {
     await deleteDocument(docId, hardDelete);
     if (hardDelete) {
       setDocuments((prev) => prev.filter((d) => d.id !== docId));
+      showToast('Document permanently deleted', 'info');
     } else {
       setDocuments((prev) => prev.map((d) => (d.id === docId ? { ...d, is_archived: true } : d)));
+      showToast('Document moved to trash', 'warning', 'Undo', () => handleRestoreDocument(docId));
     }
     if (activeDocId === docId) {
       setActiveDocId(null);
@@ -273,13 +375,14 @@ export default function App() {
   const handleRestoreDocument = async (docId: string) => {
     await restoreDocument(docId);
     setDocuments((prev) => prev.map((d) => (d.id === docId ? { ...d, is_archived: false } : d)));
+    showToast('Document restored successfully', 'success');
   };
 
   // Duplicate document (writes to DB immediately)
   const handleDuplicateDocument = async (doc: DocuFlowDocument) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      alert("Please sign in to duplicate documents.");
+      showToast('Please sign in to duplicate documents', 'warning');
       return;
     }
 
@@ -302,11 +405,12 @@ export default function App() {
     };
 
     setDocuments((prev) => [dupDoc, ...prev]);
+    showToast(`Created copy of "${doc.title}"`, 'success');
 
     const { data, error } = await saveDocument(dupDoc, true);
     if (error) {
       console.error("Duplicate document save failed:", error);
-      alert("Failed to duplicate document on server.");
+      showToast('Failed to save duplicated document to cloud', 'error');
       setDocuments((prev) => prev.filter((d) => d.id !== dupDoc.id));
     } else if (data) {
       setDocuments((prev) => prev.map((d) => (d.id === dupDoc.id ? data : d)));
@@ -451,6 +555,8 @@ export default function App() {
             onRestoreVersion={handleRestoreVersion}
             isSaving={isSaving}
             theme={theme}
+            onShowToast={showToast}
+            userSettings={settings}
           />
         </div>
       ) : (
@@ -472,6 +578,8 @@ export default function App() {
             }}
             theme={theme}
             onToggleTheme={toggleTheme}
+            onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+            onOpenSettings={() => setIsSettingsOpen(true)}
           />
 
           <div className="flex-1 flex md:overflow-hidden">
@@ -491,6 +599,9 @@ export default function App() {
               isOpenOnMobile={isMobileSidebarOpen}
               onCloseMobile={() => setIsMobileSidebarOpen(false)}
               theme={theme}
+              onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+              onOpenSettings={() => setIsSettingsOpen(true)}
+              onOpenShortcuts={() => setIsShortcutsOpen(true)}
             />
 
             
@@ -510,13 +621,14 @@ export default function App() {
                 onSelectCategory={setSelectedCategory}
                 theme={theme}
                 onToggleTheme={toggleTheme}
+                onShowToast={showToast}
               />
           </div>
 
           {/* Desktop/Tablet Floating Action Button */}
           <button
             onClick={() => handleCreateNewDocument()}
-            className="hidden md:flex fixed bottom-14 right-10 z-40 items-center justify-center w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white rounded-full shadow-xl shadow-blue-500/30 border-2 border-white transition-transform hover:scale-105"
+            className="hidden md:flex fixed bottom-14 right-10 z-40 items-center justify-center w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white rounded-full shadow-xl shadow-blue-500/30 border-2 border-white transition-transform hover:scale-105 cursor-pointer"
             title="Create New Document"
           >
             <Plus className="w-8 h-8 stroke-[2.5]" />
@@ -567,7 +679,7 @@ export default function App() {
             {/* Mobile Central Floating New Document Button */}
             <button
               onClick={() => handleCreateNewDocument()}
-              className="flex items-center justify-center w-12 h-12 -mt-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white rounded-full shadow-lg shadow-blue-500/30 border-2 border-white transition-transform"
+              className="flex items-center justify-center w-12 h-12 -mt-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white rounded-full shadow-lg shadow-blue-500/30 border-2 border-white transition-transform cursor-pointer"
               title="Create New Document"
             >
               <Plus className="w-6 h-6 stroke-[2.5]" />
@@ -618,6 +730,58 @@ export default function App() {
       )}
       </div>
 
+      {/* Global Toast System */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {/* Command Palette (⌘K) */}
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        documents={documents}
+        onOpenDoc={(docId) => {
+          setActiveDocId(docId);
+          setIsCommandPaletteOpen(false);
+        }}
+        onNewDoc={() => {
+          handleCreateNewDocument();
+          setIsCommandPaletteOpen(false);
+        }}
+        onOpenSettings={() => {
+          setIsCommandPaletteOpen(false);
+          setIsSettingsOpen(true);
+        }}
+        onOpenShortcuts={() => {
+          setIsCommandPaletteOpen(false);
+          setIsShortcutsOpen(true);
+        }}
+        onSelectCategory={(cat) => {
+          setSelectedCategory(cat);
+          setActiveTab('all');
+          setActiveDocId(null);
+          setIsCommandPaletteOpen(false);
+        }}
+        onSelectTab={(tab) => {
+          setActiveTab(tab);
+          setSelectedCategory(null);
+          setActiveDocId(null);
+          setIsCommandPaletteOpen(false);
+        }}
+      />
+
+      {/* Workspace Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        settings={settings}
+        onSaveSettings={handleUpdateSettings}
+      />
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
+
       {/* Auth Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
@@ -630,6 +794,7 @@ export default function App() {
             const p = await syncUserProfile(currentUser);
             setProfile(p);
             loadDocs(currentUser.id);
+            showToast('Signed in successfully', 'success');
           }
           setIsAuthModalOpen(false);
         }}

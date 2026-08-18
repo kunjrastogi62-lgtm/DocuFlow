@@ -12,7 +12,9 @@ import {
   Menu,
   X,
   Sun,
-  Moon
+  Moon,
+  Command,
+  Settings
 } from 'lucide-react';
 import { UserProfile } from '../types';
 
@@ -29,6 +31,8 @@ interface NavbarProps {
   isDbConnected?: boolean;
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
+  onOpenCommandPalette?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -44,6 +48,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   isDbConnected = true,
   theme = 'light',
   onToggleTheme,
+  onOpenCommandPalette,
+  onOpenSettings,
 }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -66,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={onGoHome}
-            className="flex-shrink-0 whitespace-nowrap flex items-center gap-2.5 text-left focus:outline-none group"
+            className="flex-shrink-0 whitespace-nowrap flex items-center gap-2.5 text-left focus:outline-none group cursor-pointer"
             title="DocuFlow Home"
           >
             <img 
@@ -74,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               alt="DocuFlow Logo" 
               className="w-8 h-8 object-contain transition-transform group-hover:scale-105 shrink-0"
             />
-            <span className={`font-bold text-base sm:text-lg tracking-tight group-hover:text-blue-400 transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+            <span className={`font-bold text-base sm:text-lg tracking-tight group-hover:text-blue-600 transition-colors ${theme === 'light' ? 'text-slate-900' : 'text-white'}`}>
               DocuFlow
             </span>
           </button>
@@ -86,29 +92,37 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Center: Desktop Search Bar */}
+        {/* Center: Desktop Search Bar with Command Palette shortcut */}
         <div className="flex-1 max-w-md mx-2 hidden md:block">
-          <div className="relative">
+          <div className="relative flex items-center">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search documents by title or keywords..."
-              className={`w-full border rounded-xl px-4 py-2 pl-9 text-sm focus:outline-none focus:border-blue-500/50 transition-all ${
+              placeholder="Search documents or press ⌘K..."
+              className={`w-full border rounded-xl px-4 py-2 pl-9 pr-14 text-sm focus:outline-none focus:border-blue-500/50 transition-all ${
                 theme === 'light' 
                   ? 'bg-slate-100 border-slate-200 text-slate-800 placeholder-slate-400 focus:bg-white' 
                   : 'bg-white/[0.02] border-white/[0.05] text-slate-200 placeholder-slate-500 focus:bg-white/[0.04]'
               }`}
             />
-            {searchQuery && (
+            {searchQuery ? (
               <button 
                 onClick={() => onSearchChange('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-500 font-medium"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-500 font-medium cursor-pointer"
               >
                 Clear
               </button>
-            )}
+            ) : onOpenCommandPalette ? (
+              <button
+                onClick={onOpenCommandPalette}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px] font-mono text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-colors shadow-2xs cursor-pointer"
+                title="Open Command Palette (Ctrl+K or Cmd+K)"
+              >
+                ⌘K
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -142,7 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className={`flex items-center gap-1.5 p-1 rounded-full transition-colors border border-transparent ${theme === 'light' ? 'hover:bg-slate-100 hover:border-slate-200' : 'hover:bg-white/[0.04] hover:border-white/[0.05]'}`}
+                className={`flex items-center gap-1.5 p-1 rounded-full transition-colors border border-transparent cursor-pointer ${theme === 'light' ? 'hover:bg-slate-100 hover:border-slate-200' : 'hover:bg-white/[0.04] hover:border-white/[0.05]'}`}
               >
                 <img
                   src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`}
@@ -173,15 +187,30 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </p>
                   </div>
 
-                  <div className="pt-1">
+                  <div className="py-1">
+                    {onOpenSettings && (
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          onOpenSettings();
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 font-medium transition-colors cursor-pointer"
+                      >
+                        <Settings className="w-4 h-4 text-slate-400" />
+                        Settings & Preferences
+                      </button>
+                    )}
+
+                    <div className="border-t border-slate-100 my-1" />
+
                     <button
                       onClick={() => {
                         setShowProfileMenu(false);
                         onSignOut();
                       }}
-                      className="w-full text-left px-4 py-2.5 text-xs text-red-400 hover:bg-red-50/50 dark:hover:bg-red-950/20 flex items-center gap-2 font-medium transition-colors cursor-pointer"
+                      className="w-full text-left px-4 py-2 text-xs text-red-500 hover:bg-red-50 flex items-center gap-2 font-medium transition-colors cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4 text-red-400" />
+                      <LogOut className="w-4 h-4 text-red-500" />
                       Sign Out
                     </button>
                   </div>
@@ -224,14 +253,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             {searchQuery ? (
               <button
                 onClick={() => onSearchChange('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             ) : (
               <button
                 onClick={() => setShowMobileSearch(false)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

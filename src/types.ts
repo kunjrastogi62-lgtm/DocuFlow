@@ -72,3 +72,26 @@ export interface DocumentTemplate {
   category: string;
   content: string;
 }
+
+export interface UserSettings {
+  defaultCategory: 'work' | 'personal' | 'ideas' | 'project' | 'general';
+  defaultFont?: string;
+  defaultFontSize?: string;
+  showWordCount: boolean;
+  showReadingTime?: boolean;
+  enableShortcuts?: boolean;
+  autoSaveInterval?: number;
+  defaultFontFamily?: string;
+  spellCheck?: boolean;
+  focusMode?: boolean;
+  soundEffects?: boolean;
+}
+
+export interface ToastMessage {
+  id: string;
+  type: 'success' | 'info' | 'error' | 'warning';
+  message: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  duration?: number;
+}

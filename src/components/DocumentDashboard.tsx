@@ -19,10 +19,13 @@ import {
   Filter,
   CheckCircle2,
   Folder,
-  UploadCloud
+  UploadCloud,
+  Info,
+  Download
 } from 'lucide-react';
 import { DocuFlowDocument, ViewTab } from '../types';
 import { importDocumentFile } from '../lib/documentImporter';
+import { DocumentInfoModal } from './DocumentInfoModal';
 
 interface DocumentDashboardProps {
   documents: DocuFlowDocument[];
@@ -40,6 +43,7 @@ interface DocumentDashboardProps {
   onSelectCategory?: (category: string | null) => void;
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
+  onShowToast?: (msg: string, type?: 'success' | 'info' | 'error' | 'warning', actionLabel?: string, onAction?: () => void) => void;
 }
 
 export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
@@ -58,6 +62,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   onSelectCategory,
   theme = 'light',
   onToggleTheme,
+  onShowToast,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'updated' | 'title' | 'created'>('updated');
@@ -65,10 +70,48 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   const [menuPosition, setMenuPosition] = useState<'bottom' | 'top'>('bottom');
   const [renamingDocId, setRenamingDocId] = useState<string | null>(null);
   const [renameTitle, setRenameTitle] = useState('');
+  const [infoDoc, setInfoDoc] = useState<DocuFlowDocument | null>(null);
 
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const exportMarkdown = (doc: DocuFlowDocument) => {
+    const text = (doc.content || '')
+      .replace(/<h1>(.*?)<\/h1>/gi, '# $1\n\n')
+      .replace(/<h2>(.*?)<\/h2>/gi, '## $1\n\n')
+      .replace(/<h3>(.*?)<\/h3>/gi, '### $1\n\n')
+      .replace(/<p>(.*?)<\/p>/gi, '$1\n\n')
+      .replace(/<strong>(.*?)<\/strong>/gi, '**$1**')
+      .replace(/<em>(.*?)<\/em>/gi, '*$1*')
+      .replace(/<[^>]*>/g, '');
+    const blob = new Blob([text], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${doc.title || 'document'}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    if (onShowToast) onShowToast(`Exported "${doc.title || 'document'}.md"`, 'success');
+  };
+
+  const exportHTML = (doc: DocuFlowDocument) => {
+    const fullHtml = `<!DOCTYPE html><html><head><title>${doc.title || 'Document'}</title><meta charset="utf-8"/><style>body{font-family:sans-serif; max-width:800px; margin:40px auto; padding:20px; line-height:1.6;}</style></head><body>${doc.content || ''}</body></html>`;
+    const blob = new Blob([fullHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${doc.title || 'document'}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    if (onShowToast) onShowToast(`Exported "${doc.title || 'document'}.html"`, 'success');
+  };
+
+  const copyDocText = (doc: DocuFlowDocument) => {
+    const plain = (doc.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    navigator.clipboard.writeText(plain);
+    if (onShowToast) onShowToast('Document text copied to clipboard!', 'info');
+  };
 
   const handleImportClick = () => {
     setImportError(null);
@@ -388,7 +431,9 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
               >
                 <option value="updated" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Modified</option>
                 <option value="title" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Title (A-Z)</option>
-                <option value="created" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Created</option>
+                <option value="title-desc" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Title (Z-A)</option>
+                <option value="words" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Word Count</option>
+                <option value="created" className={theme === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b0d] text-white'}>Sort: Created Date</option>
               </select>
             </div>
 
@@ -594,14 +639,14 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                         </button>
 
                         {menuOpenDocId === doc.id && (
-                          <div className={`absolute right-0 ${menuPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'} w-44 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 border ${
+                          <div className={`absolute right-0 ${menuPosition === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'} w-48 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 border ${
                             theme === 'light'
                               ? 'bg-white border-slate-200 text-slate-800'
                               : 'bg-[#0b0b0d] border-white/[0.05] text-slate-200'
                           }`}>
                             <button
                               onClick={(e) => handleStartRename(doc, e)}
-                              className={`w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                              className={`w-full text-left px-3.5 py-1.5 text-xs flex items-center gap-2 font-medium cursor-pointer ${
                                 theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
                               }`}
                             >
@@ -611,9 +656,21 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                             <button
                               onClick={() => {
                                 setMenuOpenDocId(null);
+                                setInfoDoc(doc);
+                              }}
+                              className={`w-full text-left px-3.5 py-1.5 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                                theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
+                              }`}
+                            >
+                              <Info className="w-3.5 h-3.5 text-blue-500" />
+                              Document Info
+                            </button>
+                            <button
+                              onClick={() => {
+                                setMenuOpenDocId(null);
                                 onShareDoc(doc);
                               }}
-                              className={`w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                              className={`w-full text-left px-3.5 py-1.5 text-xs flex items-center gap-2 font-medium cursor-pointer ${
                                 theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
                               }`}
                             >
@@ -625,13 +682,53 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                                 setMenuOpenDocId(null);
                                 onDuplicateDoc(doc);
                               }}
-                              className={`w-full text-left px-3.5 py-2 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                              className={`w-full text-left px-3.5 py-1.5 text-xs flex items-center gap-2 font-medium cursor-pointer ${
                                 theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
                               }`}
                             >
                               <Copy className="w-3.5 h-3.5 text-slate-400" />
                               Duplicate Copy
                             </button>
+
+                            <div className={`border-t my-1 ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.04]'}`} />
+                            
+                            <button
+                              onClick={() => {
+                                setMenuOpenDocId(null);
+                                exportMarkdown(doc);
+                              }}
+                              className={`w-full text-left px-3.5 py-1.5 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                                theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
+                              }`}
+                            >
+                              <Download className="w-3.5 h-3.5 text-slate-400" />
+                              Export Markdown (.md)
+                            </button>
+                            <button
+                              onClick={() => {
+                                setMenuOpenDocId(null);
+                                exportHTML(doc);
+                              }}
+                              className={`w-full text-left px-3.5 py-1.5 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                                theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
+                              }`}
+                            >
+                              <Download className="w-3.5 h-3.5 text-slate-400" />
+                              Export HTML (.html)
+                            </button>
+                            <button
+                              onClick={() => {
+                                setMenuOpenDocId(null);
+                                copyDocText(doc);
+                              }}
+                              className={`w-full text-left px-3.5 py-1.5 text-xs flex items-center gap-2 font-medium cursor-pointer ${
+                                theme === 'light' ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300 hover:bg-white/[0.04]'
+                              }`}
+                            >
+                              <Copy className="w-3.5 h-3.5 text-slate-400" />
+                              Copy Text
+                            </button>
+
                             {doc.is_archived ? (
                               <>
                                 <div className={`border-t my-1 ${theme === 'light' ? 'border-slate-100' : 'border-white/[0.04]'}`} />
@@ -640,7 +737,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                                     setMenuOpenDocId(null);
                                     onRestoreDoc(doc.id);
                                   }}
-                                  className="w-full text-left px-3.5 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2 font-medium cursor-pointer"
+                                  className="w-full text-left px-3.5 py-1.5 text-xs text-emerald-600 hover:bg-emerald-50 flex items-center gap-2 font-medium cursor-pointer"
                                 >
                                   Restore Document
                                 </button>
@@ -651,9 +748,9 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                                       onDeleteDoc(doc.id, true);
                                     }
                                   }}
-                                  className="w-full text-left px-3.5 py-2 text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2 font-medium cursor-pointer"
+                                  className="w-full text-left px-3.5 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 font-medium cursor-pointer"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                                  <Trash2 className="w-3.5 h-3.5 text-red-500" />
                                   Delete Permanently
                                 </button>
                               </>
@@ -665,9 +762,9 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                                     setMenuOpenDocId(null);
                                     onDeleteDoc(doc.id, false);
                                   }}
-                                  className="w-full text-left px-3.5 py-2 text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2 font-medium cursor-pointer"
+                                  className="w-full text-left px-3.5 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 font-medium cursor-pointer"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                                  <Trash2 className="w-3.5 h-3.5 text-red-500" />
                                   Move to Trash
                                 </button>
                               </>
@@ -698,8 +795,10 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                     <span className={`font-semibold transition-colors ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
                       {doc.word_count || 0} words
                     </span>
+                    <span className="text-slate-300">•</span>
+                    <span>~{Math.ceil((doc.word_count || 1) / 200)}m read</span>
                     {doc.category && (
-                      <span className="text-[10px] bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-blue-500/20">
+                      <span className="text-[10px] bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-blue-500/20">
                         {doc.category}
                       </span>
                     )}
@@ -712,12 +811,12 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                       </span>
                     )}
                     {doc.access_level === 'shared' && (
-                      <span className="flex items-center gap-1 text-blue-400">
+                      <span className="flex items-center gap-1 text-blue-500">
                         <Users className="w-3 h-3" /> Shared
                       </span>
                     )}
                     {(doc.access_level === 'public_read' || doc.access_level === 'public_edit') && (
-                      <span className="flex items-center gap-1 text-green-400">
+                      <span className="flex items-center gap-1 text-emerald-600">
                         <Globe className="w-3 h-3" /> Public
                       </span>
                     )}
@@ -867,6 +966,16 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
             <p className="text-xs text-slate-500 font-medium">Extracting formatting structure and converting to rich-text...</p>
           </div>
         </div>
+      )}
+
+      {/* Document Information & Metadata Modal */}
+      {infoDoc && (
+        <DocumentInfoModal
+          isOpen={true}
+          doc={infoDoc}
+          onClose={() => setInfoDoc(null)}
+          onShowToast={onShowToast}
+        />
       )}
     </div>
   );
