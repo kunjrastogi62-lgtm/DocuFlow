@@ -1064,9 +1064,9 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
         {/* Editor Page Canvas Area */}
         <main
           ref={scrollViewportRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-6 md:p-8 flex flex-col items-center bg-slate-100/90"
+          className="flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-6 md:p-8 bg-slate-100/90 block"
         >
-          <div className="w-full max-w-[850px] bg-white min-h-[1050px] h-auto p-4 sm:p-8 md:p-14 rounded-2xl shadow-xl border border-slate-200/90 relative mb-28 my-1 sm:my-3 flex flex-col document-sheet-container">
+          <div className="w-full max-w-[850px] mx-auto bg-white min-h-[1050px] h-auto p-4 sm:p-8 md:p-14 rounded-2xl shadow-xl border border-slate-200/90 relative mb-28 my-1 sm:my-3 flow-root document-sheet-container">
             {/* Page Header badge */}
             <div className="text-[10px] text-slate-400 font-mono tracking-wider uppercase mb-4 sm:mb-6 pb-2 border-b border-slate-100 flex items-center justify-between no-print">
               <span>DocuFlow • {doc.category?.toUpperCase() || 'GENERAL'}</span>
@@ -1088,7 +1088,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                   setSourceHtml(e.target.value);
                   onUpdateDocument(doc.id, { content: e.target.value });
                 }}
-                className="w-full min-h-[850px] h-auto flex-1 font-mono text-xs p-3 sm:p-4 bg-[#0F172A] text-slate-200 rounded-xl border border-slate-800 focus:outline-none leading-relaxed font-normal resize-y"
+                className="w-full min-h-[850px] h-auto font-mono text-xs p-3 sm:p-4 bg-[#0F172A] text-slate-200 rounded-xl border border-slate-800 focus:outline-none leading-relaxed font-normal resize-y block"
                 placeholder="<h1>Type HTML source here...</h1>"
               />
             ) : (
@@ -1098,13 +1098,10 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                 onInput={handleEditorInput}
                 onMouseUp={handleSelectionChange}
                 onKeyUp={handleSelectionChange}
-                className="prose prose-slate max-w-none focus:outline-hidden min-h-[850px] h-auto flex-1 leading-relaxed text-slate-800 break-words"
+                className="prose prose-slate max-w-none focus:outline-hidden min-h-[850px] h-auto leading-relaxed text-slate-800 break-words flow-root"
                 style={{
                   fontFamily: fontFamily,
                   fontSize: fontSize,
-                  minHeight: '850px',
-                  height: 'auto',
-                  overflow: 'visible',
                 }}
               />
             )}
