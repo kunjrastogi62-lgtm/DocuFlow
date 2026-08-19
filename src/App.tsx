@@ -536,6 +536,7 @@ export default function App() {
         <div className="z-10 flex-1 flex flex-col overflow-hidden">
           <DocumentEditor
             doc={activeDoc}
+            settings={settings}
             onGoBack={() => {
               // Filter out any brand-new unsaved documents when going back
               setDocuments((prev) => prev.filter((d) => !(d as any).isNewUnsaved));
@@ -610,6 +611,7 @@ export default function App() {
                 activeTab={activeTab}
                 selectedCategory={selectedCategory}
                 searchQuery={searchQuery}
+                settings={settings}
                 onOpenDoc={(docId) => setActiveDocId(docId)}
                 onNewDoc={handleCreateNewDocument}
                 onToggleStar={handleToggleStar}

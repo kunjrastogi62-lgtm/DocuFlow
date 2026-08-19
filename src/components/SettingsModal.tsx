@@ -48,25 +48,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Form Body */}
         <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
           {/* User Account Info */}
-          {user && (
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
-                Account Overview
-              </h4>
-              <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
-                <img
-                  src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email || 'user'}`}
-                  alt="Avatar"
-                  className="w-10 h-10 rounded-full border border-slate-200 object-cover"
-                />
-                <div className="min-w-0 flex-1 flex flex-col justify-center">
-                  <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                    {profile?.full_name || profile?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
-                  </p>
-                </div>
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
+              Account Overview
+            </h4>
+            <div className="p-3.5 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
+              <img
+                src={profile?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email || 'user'}`}
+                alt="Avatar"
+                className="w-10 h-10 rounded-full border border-slate-200 object-cover"
+              />
+              <div className="min-w-0 flex-1 flex flex-col justify-center">
+                <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                  {user 
+                    ? (profile?.full_name || profile?.username || user?.user_metadata?.full_name || user?.email?.split('@')[0])
+                    : 'Guest User'}
+                </p>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Editor Typography Defaults */}
           <div className="space-y-2">

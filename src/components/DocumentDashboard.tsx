@@ -23,7 +23,7 @@ import {
   Info,
   Download
 } from 'lucide-react';
-import { DocuFlowDocument, ViewTab } from '../types';
+import { DocuFlowDocument, ViewTab, UserSettings } from '../types';
 import { importDocumentFile } from '../lib/documentImporter';
 import { DocumentInfoModal } from './DocumentInfoModal';
 
@@ -44,6 +44,7 @@ interface DocumentDashboardProps {
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
   onShowToast?: (msg: string, type?: 'success' | 'info' | 'error' | 'warning', actionLabel?: string, onAction?: () => void) => void;
+  settings?: UserSettings;
 }
 
 export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
@@ -63,6 +64,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
   theme = 'light',
   onToggleTheme,
   onShowToast,
+  settings,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'updated' | 'title' | 'created'>('updated');
@@ -792,11 +794,15 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                     : 'bg-white/[0.01] border-t border-white/[0.03] text-slate-400'
                 }`}>
                   <div className="flex items-center gap-1.5 sm:gap-2">
-                    <span className={`font-semibold transition-colors ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
-                      {doc.word_count || 0} words
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span>~{Math.ceil((doc.word_count || 1) / 200)}m read</span>
+                    {settings?.showWordCount && (
+                      <span className={`font-semibold transition-colors ${theme === 'light' ? 'text-slate-600' : 'text-slate-300'}`}>
+                        {doc.word_count || 0} words
+                      </span>
+                    )}
+                    {settings?.showWordCount && settings?.showReadingTime && <span className="text-slate-300">•</span>}
+                    {settings?.showReadingTime && (
+                      <span>~{Math.ceil((doc.word_count || 1) / 200)}m read</span>
+                    )}
                     {doc.category && (
                       <span className="text-[10px] bg-blue-500/10 text-blue-600 px-1.5 py-0.5 rounded uppercase font-bold tracking-tight border border-blue-500/20">
                         {doc.category}
@@ -839,7 +845,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                     <th className="py-3 px-4 sm:px-5">Document Title</th>
                     <th className="py-3 px-3 sm:px-4 hidden sm:table-cell">Category</th>
                     <th className="py-3 px-3 sm:px-4 hidden md:table-cell">Access</th>
-                    <th className="py-3 px-3 sm:px-4 hidden lg:table-cell">Word Count</th>
+                    {settings?.showWordCount && <th className="py-3 px-3 sm:px-4 hidden lg:table-cell">Word Count</th>}
                     <th className="py-3 px-3 sm:px-4">Last Modified</th>
                     <th className="py-3 px-4 sm:px-5 text-right">Actions</th>
                   </tr>
@@ -878,11 +884,13 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                           {doc.access_level}
                         </span>
                       </td>
-                      <td className={`py-3.5 px-3 sm:px-4 hidden lg:table-cell font-mono transition-colors ${
-                        theme === 'light' ? 'text-slate-500' : 'text-slate-400'
-                      }`}>
-                        {doc.word_count || 0}
-                      </td>
+                      {settings?.showWordCount && (
+                        <td className={`py-3.5 px-3 sm:px-4 hidden lg:table-cell font-mono transition-colors ${
+                          theme === 'light' ? 'text-slate-500' : 'text-slate-400'
+                        }`}>
+                          {doc.word_count || 0}
+                        </td>
+                      )}
                       <td className={`py-3.5 px-3 sm:px-4 whitespace-nowrap transition-colors ${
                         theme === 'light' ? 'text-slate-500' : 'text-slate-400'
                       }`}>

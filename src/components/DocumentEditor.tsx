@@ -50,7 +50,7 @@ import {
   Smile,
   AlertTriangle
 } from 'lucide-react';
-import { DocuFlowDocument, DocumentComment, DocumentVersion } from '../types';
+import { DocuFlowDocument, DocumentComment, DocumentVersion, UserSettings } from '../types';
 import { CommentsPanel } from './CommentsPanel';
 import { VersionHistoryPanel } from './VersionHistoryPanel';
 import { ShareModal } from './ShareModal';
@@ -69,6 +69,7 @@ interface DocumentEditorProps {
   isSaving?: boolean;
   theme?: 'light' | 'dark';
   onShowToast?: (msg: string, type?: 'success' | 'info' | 'error' | 'warning') => void;
+  settings?: UserSettings;
 }
 
 export const DocumentEditor: React.FC<DocumentEditorProps> = ({
@@ -85,6 +86,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
   isSaving = false,
   theme = 'light',
   onShowToast,
+  settings,
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLElement>(null);
@@ -621,10 +623,17 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                 <span>Saved</span>
               </span>
             )}
-            <span className="text-slate-300">|</span>
-            <span className="text-slate-500 font-normal">
-              {liveWordCount} words • ~{readingTimeMin} min read
-            </span>
+            
+            {(settings?.showWordCount || settings?.showReadingTime) && (
+              <>
+                <span className="text-slate-300">|</span>
+                <span className="text-slate-500 font-normal">
+                  {settings?.showWordCount && `${liveWordCount} words`}
+                  {settings?.showWordCount && settings?.showReadingTime && ' • '}
+                  {settings?.showReadingTime && `~${readingTimeMin} min read`}
+                </span>
+              </>
+            )}
           </div>
 
           {/* Version History Toggle */}
@@ -685,7 +694,13 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in zoom-in-95 duration-100 text-xs">
                 <div className="px-3.5 py-2 border-b border-slate-100">
                   <p className="font-bold text-slate-900 truncate">{doc.title || 'Document'}</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">{liveWordCount} words • ~{readingTimeMin} min read</p>
+                  {(settings?.showWordCount || settings?.showReadingTime) && (
+                    <p className="text-[10px] text-slate-500 mt-0.5">
+                      {settings?.showWordCount && `${liveWordCount} words`}
+                      {settings?.showWordCount && settings?.showReadingTime && ' • '}
+                      {settings?.showReadingTime && `~${readingTimeMin} min read`}
+                    </p>
+                  )}
                 </div>
 
                 <div className="py-1">
@@ -1075,8 +1090,12 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                   <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">HTML Source Mode</span>
                 )}
                 <span>~{estimatedPages} {estimatedPages === 1 ? 'Page' : 'Pages'}</span>
-                <span>•</span>
-                <span>{liveWordCount || 0} Words</span>
+                {settings?.showWordCount && (
+                  <>
+                    <span>•</span>
+                    <span>{liveWordCount || 0} Words</span>
+                  </>
+                )}
               </div>
             </div>
 
