@@ -323,7 +323,7 @@ export default function App() {
 
     if (error) {
       console.error("Document save failed:", error);
-      alert(`Failed to save document. Please try again. Error: ${error.message || error}`);
+      showToast(`Failed to save document. Please try again.`, 'error');
       setIsSaving(false);
       return false;
     }
@@ -426,6 +426,10 @@ export default function App() {
       const { error } = await saveDocument({ ...doc, title: newTitle }, false);
       if (error) {
         console.error("Failed to rename document on server:", error);
+        showToast('Failed to rename document. Reverting change.', 'error');
+        handleUpdateDocument(docId, { title: doc.title });
+      } else {
+        showToast('Document renamed successfully', 'success');
       }
     }
   };
@@ -557,7 +561,6 @@ export default function App() {
             isSaving={isSaving}
             theme={theme}
             onShowToast={showToast}
-            userSettings={settings}
           />
         </div>
       ) : (

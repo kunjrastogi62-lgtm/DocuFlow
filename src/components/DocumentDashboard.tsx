@@ -76,6 +76,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
 
   const [isImporting, setIsImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ docId?: string; isAll?: boolean } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const exportMarkdown = (doc: DocuFlowDocument) => {
@@ -394,9 +395,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
             {activeTab === 'trash' && sortedDocs.length > 0 && (
               <button
                 onClick={() => {
-                  if (confirm('Permanently delete ALL items in trash? This cannot be undone.')) {
-                    sortedDocs.forEach(doc => onDeleteDoc(doc.id, true));
-                  }
+                  setDeleteConfirm({ isAll: true });
                 }}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-950/20 hover:bg-red-950/40 text-red-400 text-xs font-semibold rounded-lg border border-red-500/20 transition-colors cursor-pointer"
               >
@@ -746,9 +745,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                                 <button
                                   onClick={() => {
                                     setMenuOpenDocId(null);
-                                    if (confirm('Permanently delete this document? This cannot be undone.')) {
-                                      onDeleteDoc(doc.id, true);
-                                    }
+                                    setDeleteConfirm({ docId: doc.id });
                                   }}
                                   className="w-full text-left px-3.5 py-1.5 text-xs text-red-600 hover:bg-red-50 flex items-center gap-2 font-medium cursor-pointer"
                                 >
@@ -909,9 +906,7 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
                               </button>
                               <button
                                 onClick={() => {
-                                  if (confirm('Permanently delete this document? This cannot be undone.')) {
-                                    onDeleteDoc(doc.id, true);
-                                  }
+                                  setDeleteConfirm({ docId: doc.id });
                                 }}
                                 className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
                                 title="Delete Permanently"
@@ -984,6 +979,44 @@ export const DocumentDashboard: React.FC<DocumentDashboardProps> = ({
           onClose={() => setInfoDoc(null)}
           onShowToast={onShowToast}
         />
+      )}
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="fixed inset-0" onClick={() => setDeleteConfirm(null)} />
+          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 z-10 animate-in zoom-in-95 duration-150 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center mx-auto mb-3">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <h3 className="font-bold text-slate-900 text-base mb-1">Confirm Deletion</h3>
+            <p className="text-xs text-slate-500 mb-5">
+              {deleteConfirm.isAll 
+                ? 'Permanently delete ALL items in trash? This action cannot be undone.'
+                : 'Permanently delete this document? This action cannot be undone.'}
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  if (deleteConfirm.isAll) {
+                    sortedDocs.forEach(doc => onDeleteDoc(doc.id, true));
+                  } else if (deleteConfirm.docId) {
+                    onDeleteDoc(deleteConfirm.docId, true);
+                  }
+                  setDeleteConfirm(null);
+                }}
+                className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                Permanently Delete
+              </button>
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
